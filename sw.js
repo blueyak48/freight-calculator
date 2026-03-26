@@ -1,4 +1,4 @@
-const CACHE_NAME = `freight-rate-v1`;
+const CACHE_NAME = `freight-rate-v7`;
 const urlsToCache = [
   `./`,
   `./index.html`,
@@ -18,6 +18,12 @@ self.addEventListener(`install`, event => {
 });
 
 self.addEventListener(`fetch`, event => {
+  // Instantly bypass cache for maps and remote APIs to maintain lightning speed
+  if (event.request.url.startsWith('http') && !event.request.url.includes(location.hostname)) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {

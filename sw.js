@@ -1,4 +1,4 @@
-const CACHE_NAME = `freight-rate-v7`;
+const CACHE_NAME = `freight-rate-v8`;
 const urlsToCache = [
   `./`,
   `./index.html`,
@@ -15,20 +15,36 @@ self.addEventListener(`install`, event => {
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
   );
+  self.skipWaiting();
 });
 
-self.addEventListener(`fetch`, event => {
-  // Instantly bypass cache for maps and remote APIs to maintain lightning speed
+self.addEventListener(`activate`, event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.filter(name => name !== CACHE_NAME)
+          .map(name => caches.delete(name))
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
   if (event.request.url.startsWith('http') && !event.request.url.includes(location.hostname)) {
     event.respondWith(fetch(event.request));
     return;
   }
-
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) return response;
-        return fetch(event.request);
+    fetch(event.request)
+      .then(networkResponse => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseToCache));
+        }
+        return networkResponse;
       })
+      .catch(() => caches.match(event.request))
   );
 });

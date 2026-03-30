@@ -632,7 +632,7 @@
             costing: "auto",
             costing_options: {
                 auto: {
-                    shortest: true,
+                    // We removed the 'shortest' parameter to enable Practical Routing (fastest time), which aligns with Google Maps and prevents rural-grid algorithmic zig-zagging.
                     // 0.1 strongly penalizes unpaved/gravel roads, favoring asphalt, but still permits last-mile gravel routing if the destination is on a farm.
                     use_unpaved: 0.1
                 }

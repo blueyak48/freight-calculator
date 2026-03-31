@@ -723,22 +723,31 @@
                 resolveLocation('destination')
             ]);
             
-            // We must execute these sequentially with a 1100ms delay. Valhalla's NGINX server strips CORS headers on 429 Too Many Requests,
-            // which causes the browser to throw a generic "Failed to fetch" error if we fire both via Promise.all simultaneously.
+            // Phase 1: Request Shortest Route natively and instantly render it to eliminate perceived lag
+            let shortRoute = await getDistance(p1, p2, true);
+            let rate1 = getRate(shortRoute.miles, type);
+            
+            document.getElementById('resDistance').innerText = shortRoute.miles.toLocaleString() + " miles";
+            document.getElementById('resRate').innerText = "$" + rate1.toFixed(2);
+            resCard.style.display = 'flex';
+            renderMap(shortRoute.geometry);
+            
+            // Release the UI instantly so it feels blazing fast
+            btnText.style.display = 'block';
+            loader.style.display = 'none';
+            btn.disabled = false;
+            
+            // Phase 2: Wait 1100ms to clear rate limits, then imperceptibly calculate Fastest Route in background
+            await new Promise(r => setTimeout(r, 1100));
             let fastRoute = await getDistance(p1, p2, false);
             
-            await new Promise(r => setTimeout(r, 1100)); // Prevent 429 Rate Limit
-            
-            let shortRoute = await getDistance(p1, p2, true);
-            
-            let routeObj = (shortRoute.miles < fastRoute.miles) ? shortRoute : fastRoute;
-            let rate = getRate(routeObj.miles, type);
-            
-            document.getElementById('resDistance').innerText = routeObj.miles.toLocaleString() + " miles";
-            document.getElementById('resRate').innerText = "$" + rate.toFixed(2);
-            resCard.style.display = 'flex';
-            
-            renderMap(routeObj.geometry);
+            // If the Fastest routing corrects a "Quasi-Shortest" mapping error and physically drops the total mileage, seamlessly update the screen
+            if (fastRoute.miles < shortRoute.miles) {
+                let rate2 = getRate(fastRoute.miles, type);
+                document.getElementById('resDistance').innerText = fastRoute.miles.toLocaleString() + " miles (Optimized)";
+                document.getElementById('resRate').innerText = "$" + rate2.toFixed(2);
+                renderMap(fastRoute.geometry);
+            }
             
         } catch (e) {
             msg.innerText = e.message;

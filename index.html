@@ -723,11 +723,13 @@
                 resolveLocation('destination')
             ]);
             
-            // Simultaneously fire both heuristic calculations then mathematically enforce whichever finds the physically shorter route!
-            let [fastRoute, shortRoute] = await Promise.all([
-                getDistance(p1, p2, false),
-                getDistance(p1, p2, true)
-            ]);
+            // We must execute these sequentially with a 1100ms delay. Valhalla's NGINX server strips CORS headers on 429 Too Many Requests,
+            // which causes the browser to throw a generic "Failed to fetch" error if we fire both via Promise.all simultaneously.
+            let fastRoute = await getDistance(p1, p2, false);
+            
+            await new Promise(r => setTimeout(r, 1100)); // Prevent 429 Rate Limit
+            
+            let shortRoute = await getDistance(p1, p2, true);
             
             let routeObj = (shortRoute.miles < fastRoute.miles) ? shortRoute : fastRoute;
             let rate = getRate(routeObj.miles, type);

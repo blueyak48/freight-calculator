@@ -355,7 +355,21 @@
         </div>
     </div>
 
-    <button id="calcBtn">
+    <div class="input-group" style="margin-top: 5px;">
+        <label>Route Preference</label>
+        <div class="radio-group">
+            <label class="radio-label">
+                <input type="radio" name="routePref" value="fast" checked>
+                Fastest (Highways)
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="routePref" value="short">
+                Shortest (Backroads)
+            </label>
+        </div>
+    </div>
+
+    <button id="calcBtn" style="margin-top: 1.5rem;">
         <span id="btnText">Calculate Rate</span>
         <div class="loader" id="btnLoader"></div>
     </button>
@@ -375,7 +389,7 @@
     </div>
     
     <div class="version-footer">
-        v1.2.0 | Rates Effective 2026 Mar 30
+        v1.3.0 | Rates Effective 2026 Mar 30
     </div>
 </div>
 
@@ -625,7 +639,7 @@
         return coordinates;
     }
 
-    async function getDistance(coord1, coord2) {
+    async function getDistance(coord1, coord2, isShortest) {
         // Upgraded to massively parallelized Valhalla routing to prevent OSRM server timeouts
         let payload = {
             locations: [{ lon: coord1.lon, lat: coord1.lat }, { lon: coord2.lon, lat: coord2.lat }],
@@ -639,6 +653,10 @@
             },
             directions_options: { units: "miles" }
         };
+        
+        if (isShortest) {
+            payload.costing_options.auto.shortest = true;
+        }
         
         let res = await fetch("https://valhalla1.openstreetmap.de/route", {
             method: 'POST',
@@ -691,6 +709,8 @@
         let origin = document.getElementById('origin').value.trim();
         let destination = document.getElementById('destination').value.trim();
         let type = document.querySelector('input[name="freightType"]:checked').value;
+        let routePref = document.querySelector('input[name="routePref"]:checked').value;
+        let isShortest = (routePref === 'short');
         
         let msg = document.getElementById('errorMsg');
         let resCard = document.getElementById('resultCard');
@@ -719,7 +739,7 @@
                 resolveLocation('destination')
             ]);
             
-            let routeObj = await getDistance(p1, p2);
+            let routeObj = await getDistance(p1, p2, isShortest);
             let rate = getRate(routeObj.miles, type);
             
             document.getElementById('resDistance').innerText = routeObj.miles.toLocaleString() + " miles";

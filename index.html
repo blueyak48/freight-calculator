@@ -406,7 +406,10 @@
         <div class="pin-box">
             <h2 style="margin-bottom: 0.5rem;">Dispatch Login</h2>
             <p style="color: var(--text-muted); font-size: 0.875rem;">Authentication Required</p>
-            <input type="password" class="pin-input" id="pinInput" placeholder="••••" maxlength="12">
+            <form id="pinForm" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                <input type="password" class="pin-input" id="pinInput" placeholder="••••" maxlength="12" enterkeyhint="enter" autocomplete="off">
+                <button type="submit" id="pinSubmitBtn" style="margin-top: 1rem; width: 80%; padding: 0.75rem; font-size: 1rem;">Enter</button>
+            </form>
             <div id="pinError" style="color: var(--danger); font-size: 0.8rem; margin-top: 0.5rem; display: none;">
                 Invalid Auth Code</div>
         </div>
@@ -483,17 +486,29 @@
             pinOverlay.style.display = 'none';
         }
 
+        const pinForm = document.getElementById('pinForm');
+
+        function handlePinAuth() {
+            if (pinInput.value === 'texline') {
+                localStorage.setItem('dispatchAuth', 'texline');
+                pinOverlay.style.opacity = '0';
+                setTimeout(() => pinOverlay.style.display = 'none', 300);
+            } else {
+                pinError.style.display = 'block';
+                pinInput.value = '';
+                setTimeout(() => pinError.style.display = 'none', 2000);
+            }
+        }
+
+        pinForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            handlePinAuth();
+        });
+
         pinInput.addEventListener('keyup', function (e) {
             if (e.key === 'Enter') {
-                if (this.value === 'texline') {
-                    localStorage.setItem('dispatchAuth', 'texline');
-                    pinOverlay.style.opacity = '0';
-                    setTimeout(() => pinOverlay.style.display = 'none', 300);
-                } else {
-                    pinError.style.display = 'block';
-                    this.value = '';
-                    setTimeout(() => pinError.style.display = 'none', 2000);
-                }
+                e.preventDefault();
+                handlePinAuth();
             }
         });
 

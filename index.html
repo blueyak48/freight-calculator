@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Freight Rate Calculator</title>
-    
+    <title>Freight Rate Calculator v2.0.0</title>
+
     <!-- PWA Setup -->
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./icon-192.png">
@@ -12,6 +13,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Freight">
+
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -48,9 +50,17 @@
         }
 
         @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         .container {
@@ -82,12 +92,54 @@
             gap: 0.5rem;
         }
 
+        .pin-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-color);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .pin-box {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .pin-input {
+            width: 80%;
+            text-align: center;
+            letter-spacing: 0.25rem;
+            font-size: 1.25rem;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .pin-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
         label {
             font-size: 0.875rem;
             font-weight: 500;
             color: var(--text-muted);
         }
-        
+
         .input-wrapper {
             position: relative;
         }
@@ -103,7 +155,7 @@
             display: none;
             transition: color 0.2s ease;
         }
-        
+
         .clear-btn:hover {
             color: var(--text-main);
         }
@@ -124,7 +176,7 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
         }
-        
+
         .autocomplete-list {
             position: absolute;
             top: 100%;
@@ -214,7 +266,7 @@
         button:active {
             transform: translateY(0);
         }
-        
+
         button:disabled {
             background: var(--text-muted);
             cursor: not-allowed;
@@ -235,8 +287,15 @@
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .result-row {
@@ -261,7 +320,7 @@
             color: var(--success);
             text-align: right;
         }
-        
+
         .error-msg {
             color: var(--danger);
             font-size: 0.875rem;
@@ -273,10 +332,10 @@
             border-radius: 0.5rem;
             border: 1px solid rgba(239, 68, 68, 0.2);
         }
-        
+
         .loader {
             display: none;
-            border: 3px solid rgba(255,255,255,0.1);
+            border: 3px solid rgba(255, 255, 255, 0.1);
             border-top: 3px solid white;
             border-radius: 50%;
             width: 20px;
@@ -284,12 +343,17 @@
             animation: spin 1s linear infinite;
             margin: 0 auto;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
-        
+
         #mapContainer {
             height: 250px;
             width: 100%;
@@ -298,9 +362,10 @@
             overflow: hidden;
             display: none;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1; /* Keep leaflet under autocomplete */
+            z-index: 1;
+            /* Keep leaflet under autocomplete */
         }
-        
+
         .version-footer {
             text-align: center;
             font-size: 0.75rem;
@@ -316,459 +381,595 @@
             font-family: 'Inter', sans-serif;
             background: #1e293b;
         }
+
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>Freight Rate Calculator</h1>
-
-    <div class="input-group">
-        <label for="origin">Origin</label>
-        <div class="input-wrapper">
-            <input type="text" id="origin" placeholder="e.g. Houston, TX" autocomplete="off">
-            <span class="clear-btn" id="clear-origin">&times;</span>
-            <div id="origin-list" class="autocomplete-list"></div>
+    <div class="pin-overlay" id="pinOverlay">
+        <div class="pin-box">
+            <h2 style="margin-bottom: 0.5rem;">Dispatch Login</h2>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Authentication Required</p>
+            <input type="password" class="pin-input" id="pinInput" placeholder="••••" maxlength="12">
+            <div id="pinError" style="color: var(--danger); font-size: 0.8rem; margin-top: 0.5rem; display: none;">
+                Invalid Auth Code</div>
         </div>
     </div>
 
-    <div class="input-group">
-        <label for="destination">Destination</label>
-        <div class="input-wrapper">
-            <input type="text" id="destination" placeholder="e.g. Dallas, TX" autocomplete="off">
-            <span class="clear-btn" id="clear-dest">&times;</span>
-            <div id="dest-list" class="autocomplete-list"></div>
+    <div class="container">
+        <h1>Freight Rate Calculator</h1>
+
+        <div class="input-group">
+            <label for="origin">Origin</label>
+            <div class="input-wrapper">
+                <input type="text" id="origin" placeholder="e.g. Houston, TX" autocomplete="off">
+                <span class="clear-btn" id="clear-origin">&times;</span>
+                <div id="origin-list" class="autocomplete-list"></div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="destination">Destination</label>
+            <div class="input-wrapper">
+                <input type="text" id="destination" placeholder="e.g. Dallas, TX" autocomplete="off">
+                <span class="clear-btn" id="clear-dest">&times;</span>
+                <div id="dest-list" class="autocomplete-list"></div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Freight Type</label>
+            <div class="radio-group">
+                <label class="radio-label">
+                    <input type="radio" name="freightType" value="liquid" checked>
+                    Liquid / Dry
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="freightType" value="nh3">
+                    NH3 / Inds.
+                </label>
+            </div>
+        </div>
+
+        <button id="calcBtn">
+            <span id="btnText">Calculate Rate</span>
+            <div class="loader" id="btnLoader"></div>
+        </button>
+
+        <div class="error-msg" id="errorMsg"></div>
+
+        <div class="result-card" id="resultCard">
+            <div class="result-row">
+                <span class="result-label">Distance</span>
+                <span class="result-val" id="resDistance">-- miles</span>
+            </div>
+            <div class="result-row"
+                style="margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                <span class="result-label">Estimated Rate</span>
+                <span class="result-total" id="resRate">$0.00</span>
+            </div>
+            <div id="mapContainer"></div>
+        </div>
+
+        <div class="version-footer">
+            v2.0.0 | Rates Effective 2026 Mar 30
         </div>
     </div>
 
-    <div class="input-group">
-        <label>Freight Type</label>
-        <div class="radio-group">
-            <label class="radio-label">
-                <input type="radio" name="freightType" value="liquid" checked>
-                Liquid / Dry
-            </label>
-            <label class="radio-label">
-                <input type="radio" name="freightType" value="nh3">
-                NH3 / Inds.
-            </label>
-        </div>
-    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Pin Authentication Logic
+        const pinOverlay = document.getElementById('pinOverlay');
+        const pinInput = document.getElementById('pinInput');
+        const pinError = document.getElementById('pinError');
 
-    <button id="calcBtn">
-        <span id="btnText">Calculate Rate</span>
-        <div class="loader" id="btnLoader"></div>
-    </button>
-    
-    <div class="error-msg" id="errorMsg"></div>
-
-    <div class="result-card" id="resultCard">
-        <div class="result-row">
-            <span class="result-label">Distance</span>
-            <span class="result-val" id="resDistance">-- miles</span>
-        </div>
-        <div class="result-row" style="margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-            <span class="result-label">Estimated Rate</span>
-            <span class="result-total" id="resRate">$0.00</span>
-        </div>
-        <div id="mapContainer"></div>
-    </div>
-    
-    <div class="version-footer">
-        v1.3.0 | Rates Effective 2026 Mar 30
-    </div>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    const ratesLiquidDry = [[50,13.00],[60,14.40],[70,16.50],[80,17.50],[90,19.50],[100,22.50],[110,24.80],[120,27.10],[130,29.30],[140,31.60],[150,33.90],[160,36.00],[170,38.20],[180,40.50],[190,42.80],[200,45.00],[210,47.30],[220,49.60],[230,51.80],[240,54.10],[250,56.40],[260,58.50],[270,60.70],[280,63.00],[290,65.30],[300,67.50],[310,69.80],[320,72.10],[330,74.30],[340,76.60],[350,78.70],[360,80.90],[370,83.20],[380,85.50],[390,87.70],[400,90.00],[410,92.30],[420,94.50],[430,96.80],[440,99.10],[450,101.30],[460,103.60],[470,105.90],[480,108.10],[490,110.40],[500,112.70],[520,116.90],[540,121.40],[560,126.10],[580,130.80],[600,135.30],[620,139.50]];
-    const ratesNH3 = [[50,23.40],[60,26.80],[70,28.90],[80,31.20],[90,37.50],[100,41.00],[110,43.50],[120,45.60],[130,47.30],[140,49.40],[150,52.20],[160,54.50],[170,56.60],[180,58.70],[190,60.80],[200,62.90],[210,65.00],[220,67.30],[230,69.70],[240,72.20],[250,74.70],[260,77.30],[270,79.80],[280,82.50],[290,85.30],[300,88.20],[310,91.00],[320,93.70],[330,96.70],[340,99.40],[350,102.10],[360,104.70],[370,107.20],[380,109.70],[390,112.30],[400,114.80],[410,117.50],[420,120.30],[430,123.40],[440,126.10],[450,129.10],[460,132.10],[470,134.60],[480,137.60],[490,140.40],[500,142.20],[520,147.30],[540,152.40],[560,157.40],[580,163.50],[600,168.80],[620,174.10],[640,179.80],[660,185.40],[680,191.00],[700,196.60],[720,202.20],[740,207.80],[760,213.50],[780,219.10],[800,224.70],[820,230.30],[840,235.90],[860,241.50],[880,247.20],[900,252.80],[920,258.40],[940,264.00],[960,269.60],[980,275.20],[1000,280.90],[1020,286.50],[1040,292.10]];
-
-    const popLocs = [
-        { c: "Poole Ag", n: "PCC Texline", lat: 36.3764334, lon: -103.0246997 },
-        { c: "Poole Ag", n: "PCC Dalhart", lat: 36.1055499, lon: -102.5844493 },
-        { c: "Poole Ag", n: "PCC Dimmitt", lat: 34.5243163, lon: -102.2867177 },
-        { c: "Poole Ag", n: "PCC Slaton", lat: 33.4535981, lon: -101.6564396 },
-        { c: "Poole Ag", n: "PCC Altus", lat: 34.6312274, lon: -99.305321 },
-        { c: "Poole Ag", n: "PCC Holcomb", lat: 37.9863314, lon: -100.9908653 },
-        { c: "Poole Ag", n: "PCC Oakley", lat: 39.1230127, lon: -100.8346464 },
-        { c: "Poole Ag", n: "PCC Monte Vista", lat: 37.5428812, lon: -106.0566054 },
-        { c: "Equalizer Midwest", n: "Equalizer Hastings", lat: 40.5831083, lon: -98.3053308 },
-        { c: "CF Industries", n: "CF Woodward", lat: 36.4370881, lon: -99.4745135 },
-        { c: "CF Industries", n: "CF Verdigris", lat: 36.2346705, lon: -95.7173474 },
-        { c: "CF Industries", n: "CF Port Neal", lat: 42.3370032, lon: -96.3685293 },
-        { c: "Nutrien", n: "Nutrien Borger", lat: 35.6421982, lon: -101.4284836 },
-        { c: "Koch Fertilizer", n: "Koch Beatrice", lat: 40.3195079, lon: -96.840581 },
-        { c: "Koch Fertilizer", n: "Koch Dodge", lat: 37.778725, lon: -99.9307257 },
-        { c: "Koch Fertilizer", n: "Koch Enid", lat: 36.3786236, lon: -97.764093 },
-        { c: "CHS", n: "CHS McPherson", lat: 38.3440444, lon: -97.6680178 },
-        { c: "Creston Fertilizer", n: "Creston Fertilizer", lat: 41.7068311, lon: -97.3649249 },
-        { c: "Oakley Fertilizer", n: "Oakley Port 33", lat: 36.1654023, lon: -95.6215894 },
-        { c: "Basin Coop", n: "Basin Cortez", lat: 37.4431984, lon: -108.6466542 },
-        { c: "Basin Coop", n: "Basin Durango", lat: 37.228275, lon: -107.8601997 },
-        { c: "Martin Resources", n: "Martin Plainview", lat: 34.2214805, lon: -101.7567761 },
-        { c: "Intrepid Potash", n: "Intrepid Carlsbad", lat: 32.5034551, lon: -103.7823237 },
-        { c: "Intrepid Potash", n: "Intrepid Moab", lat: 38.5215511, lon: -109.6584529 },
-        { c: "LSB Chemical", n: "LSB Pryor", lat: 36.242689, lon: -95.2779984 },
-        { c: "Bagwell Ag Services", n: "Bagwell Ag Groom", lat: 35.196605, lon: -101.1056794 },
-        { c: "Ag Ingenuity", n: "Ag Ingenuity Gruver", lat: 36.261522, lon: -101.406968 },
-        { c: "Farmers Ag Supply", n: "Farmers Ag Store", lat: 36.2035551, lon: -101.1913901 },
-        { c: "Boise City Farmers Coop", n: "BC Coop", lat: 36.7163198, lon: -102.5182178 },
-        { c: "Fertilizer Company of Arizona", n: "Fertizona Casa Grande", lat: 32.8540568, lon: -111.7234244 },
-        { c: "Fertilizer Company of Arizona", n: "Fertizona Yuma", lat: 32.6772587, lon: -114.5611212 },
-        { c: "Fertilizer Company of Arizona", n: "Fertizona Buckeye", lat: 33.377118, lon: -112.6277961 },
-        { c: "G+ Ag", n: "G+ Ag Hugoton", lat: 36.9967042, lon: -101.3724954 },
-        { c: "Blaine Larsen Farms", n: "Larsen Farms South Sedan HQ", lat: 36.078717, lon: -102.8760218 },
-        { c: "NOVUS Ag", n: "Novus Colon", lat: 41.3085616, lon: -96.6108545 },
-        { c: "NOVUS Ag", n: "Frontier Ag Wakeeney", lat: 39.0233823, lon: -99.8858471 },
-        { c: "Nutrien Ag Solutions", n: "Nutrien Oberlin", lat: 39.8356921, lon: -100.5334612 },
-        { c: "Simplot AB Retail", n: "Simplot Copeland", lat: 37.474618, lon: -100.7145067 },
-        { c: "Simplot AB Retail", n: "Simplot Cheyenne Wells", lat: 38.8160542, lon: -102.3353887 },
-        { c: "Simplot AB Retail", n: "Simplot Burlington", lat: 39.3208137, lon: -102.1470922 },
-        { c: "Simplot AB Retail", n: "Simplot Edson", lat: 39.339063, lon: -101.5755008 },
-        { c: "Simplot AB Retail", n: "Simplot Wray", lat: 40.0798611, lon: -102.2321664 },
-        { c: "Simplot AB Retail", n: "Simplot Anthony", lat: 32.0325846, lon: -106.601223 },
-        { c: "Simplot AB Retail", n: "Simplot Brownfield", lat: 33.1979623, lon: -102.276923 },
-        { c: "Simplot AB Retail", n: "Simplot Webbers Falls", lat: 35.4892275, lon: -95.1230922 },
-        { c: "Wheeler Brothers Grain", n: "Wheeler Bros Alva", lat: 36.8074057, lon: -98.6643246 },
-        { c: "Wheeler Brothers Grain", n: "Wheeler Bros Canton", lat: 36.0545887, lon: -98.5906332 },
-        { c: "Wheeler Brothers Grain", n: "Wheeler Bros Geary", lat: 35.6267763, lon: -98.3136556 },
-        { c: "Wheeler Brothers Grain", n: "Wheeler Bros Hydro", lat: 35.5450222, lon: -98.5781304 },
-        { c: "Wheeler Brothers Grain", n: "Wheeler Bros Kingfisher", lat: 35.8644582, lon: -97.9407481 },
-        { c: "Wheeler Brothers Grain", n: "Wheeler Bros Seiling", lat: 36.144817, lon: -98.9372475 },
-        { c: "Wheeler Brothers Grain", n: "Wheeler Bros Taloga", lat: 36.0410715, lon: -98.9611362 },
-        { c: "Wheeler Brothers Grain", n: "Wheeler Bros Thomas", lat: 35.7426306, lon: -98.7387273 },
-        { c: "Wheeler Brothers Grain", n: "Wheeler Bros Watonga", lat: 35.8415663, lon: -98.4187355 },
-        { c: "Oklahoma Kansas Cooperative", n: "OK-KS Coop - Amorita", lat: 36.9246424, lon: -98.2939629 },
-        { c: "Oklahoma Kansas Cooperative", n: "OK-KS Coop - Hazelton", lat: 37.0911435, lon: -98.4073407 },
-        { c: "Oklahoma Kansas Cooperative", n: "OK-KS Coop - Kiowa", lat: 37.0173048, lon: -98.4924389 },
-        { c: "Oklahoma Kansas Cooperative", n: "OK-KS Coop - Burlington", lat: 36.9001996, lon: -98.4239662 },
-        { c: "Flagler Aerial", n: "Flagler Aerial", lat: 39.2799346, lon: -103.0616594 },
-        { c: "Farmers Coop Equity", n: "Farmers Coop Isabel", lat: 37.467575, lon: -98.5521705 },
-        { c: "Hi Plains Ponderosa Dairy", n: "Hi Plains Dairy - Plains", lat: 37.1685646, lon: -100.6346307 },
-        { c: "Frontier Fertilizer", n: "Frontier Fertilizer Johnstown", lat: 40.3379157, lon: -104.9047555 },
-        { c: "EGE Products", n: "EGE Mineola", lat: 37.448352, lon: -100.0441521 },
-        { c: "First Rate Ag", n: "First Rate Ag Holdrege", lat: 40.4398113, lon: -99.4562896 },
-        { c: "McCune Coop", n: "McCune Coop", lat: 37.3513032, lon: -95.0188792 },
-        { c: "Hi-Line Cooperative", n: "Hi-Line McCook", lat: 40.1996541, lon: -100.6022076 },
-        { c: "Hi-Line Cooperative", n: "Hi-Line Brule", lat: 41.0896718, lon: -101.8875358 },
-        { c: "Hi-Line Cooperative", n: "Hi-Line Grant", lat: 40.8407783, lon: -101.7085756 },
-        { c: "Hi-Line Cooperative", n: "Hi-Line Wallace", lat: 40.835627, lon: -101.1627124 },
-        { c: "Hi-Line Cooperative", n: "Hi-Line Sutherland", lat: 41.1551447, lon: -101.1245666 },
-        { c: "Mid-Kansas Ag", n: "Mid-Kansas Ag St. John", lat: 37.9866666, lon: -98.7653082 },
-        { c: "Western Consolidated Coop", n: "Western Consolidated Holloway", lat: 45.2475319, lon: -95.9050707 },
-        { c: "Ag Valley Coop", n: "Ag Valley Edison", lat: 40.2803626, lon: -99.7758615 },
-        { c: "Ag Valley Coop", n: "Ag Valley North Platte", lat: 41.1399892, lon: -100.7587442 },
-    ];
-
-    function getRate(miles, type) {
-        let sortedRates = type === 'liquid' ? ratesLiquidDry : ratesNH3;
-        
-        // Return minimum rate if below shortest distance
-        if (miles <= sortedRates[0][0]) return sortedRates[0][1];
-        
-        // Find matching or next highest mileage step
-        for (let i = 0; i < sortedRates.length; i++) {
-            if (miles <= sortedRates[i][0]) {
-                return sortedRates[i][1];
-            }
+        if (localStorage.getItem('dispatchAuth') === 'texline') {
+            pinOverlay.style.display = 'none';
         }
-        
-        // If miles exceed the highest value in table, use the per-mile cost ratio of the max limit
-        let maxStep = sortedRates[sortedRates.length - 1];
-        let maxRatePerMile = maxStep[1] / maxStep[0];
-        return parseFloat((miles * maxRatePerMile).toFixed(2));
-    }
-    
-    // Autocomplete Logic
-    let debounceTimer;
-    function setupAutocomplete(inputId, listId, clearBtnId) {
-        let input = document.getElementById(inputId);
-        let list = document.getElementById(listId);
-        let clearBtn = document.getElementById(clearBtnId);
-        
-        clearBtn.addEventListener('click', function() {
-            input.value = '';
-            input.removeAttribute('data-lat');
-            input.removeAttribute('data-lon');
-            clearBtn.style.display = 'none';
-            list.style.display = 'none';
-            input.focus();
-        });
-        
-        input.addEventListener('input', function() {
-            input.removeAttribute('data-lat');
-            input.removeAttribute('data-lon');
-            clearBtn.style.display = this.value.length > 0 ? 'block' : 'none';
-            
-            clearTimeout(debounceTimer);
-            let val = this.value.trim().toLowerCase();
-            if (val.length < 2) {
-                list.style.display = 'none';
-                return;
-            }
-            
-            debounceTimer = setTimeout(() => {
-                list.innerHTML = '';
-                let hasResults = false;
-                
-                let matches = popLocs.filter(loc => loc.n.toLowerCase().includes(val) || loc.c.toLowerCase().includes(val));
-                if (matches.length > 0) {
-                    hasResults = true;
-                    matches.forEach(m => {
-                        let div = document.createElement('div');
-                        div.className = 'autocomplete-item';
-                        div.innerHTML = `<strong>${m.n}</strong> <span style="font-size: 0.75rem; color: #94a3b8;">(${m.c})</span>`;
-                        div.onclick = function() {
-                            input.value = m.n;
-                            input.setAttribute('data-lat', m.lat);
-                            input.setAttribute('data-lon', m.lon);
-                            list.style.display = 'none';
-                        };
-                        list.appendChild(div);
-                    });
-                    list.style.display = 'block'; // Show local results instantly
+
+        pinInput.addEventListener('keyup', function (e) {
+            if (e.key === 'Enter') {
+                if (this.value === 'texline') {
+                    localStorage.setItem('dispatchAuth', 'texline');
+                    pinOverlay.style.opacity = '0';
+                    setTimeout(() => pinOverlay.style.display = 'none', 300);
                 } else {
+                    pinError.style.display = 'block';
+                    this.value = '';
+                    setTimeout(() => pinError.style.display = 'none', 2000);
+                }
+            }
+        });
+
+        const ratesLiquidDry = [[50, 13.00], [60, 14.40], [70, 16.50], [80, 17.50], [90, 19.50], [100, 22.50], [110, 24.80], [120, 27.10], [130, 29.30], [140, 31.60], [150, 33.90], [160, 36.00], [170, 38.20], [180, 40.50], [190, 42.80], [200, 45.00], [210, 47.30], [220, 49.60], [230, 51.80], [240, 54.10], [250, 56.40], [260, 58.50], [270, 60.70], [280, 63.00], [290, 65.30], [300, 67.50], [310, 69.80], [320, 72.10], [330, 74.30], [340, 76.60], [350, 78.70], [360, 80.90], [370, 83.20], [380, 85.50], [390, 87.70], [400, 90.00], [410, 92.30], [420, 94.50], [430, 96.80], [440, 99.10], [450, 101.30], [460, 103.60], [470, 105.90], [480, 108.10], [490, 110.40], [500, 112.70], [520, 116.90], [540, 121.40], [560, 126.10], [580, 130.80], [600, 135.30], [620, 139.50]];
+        const ratesNH3 = [[50, 23.40], [60, 26.80], [70, 28.90], [80, 31.20], [90, 37.50], [100, 41.00], [110, 43.50], [120, 45.60], [130, 47.30], [140, 49.40], [150, 52.20], [160, 54.50], [170, 56.60], [180, 58.70], [190, 60.80], [200, 62.90], [210, 65.00], [220, 67.30], [230, 69.70], [240, 72.20], [250, 74.70], [260, 77.30], [270, 79.80], [280, 82.50], [290, 85.30], [300, 88.20], [310, 91.00], [320, 93.70], [330, 96.70], [340, 99.40], [350, 102.10], [360, 104.70], [370, 107.20], [380, 109.70], [390, 112.30], [400, 114.80], [410, 117.50], [420, 120.30], [430, 123.40], [440, 126.10], [450, 129.10], [460, 132.10], [470, 134.60], [480, 137.60], [490, 140.40], [500, 142.20], [520, 147.30], [540, 152.40], [560, 157.40], [580, 163.50], [600, 168.80], [620, 174.10], [640, 179.80], [660, 185.40], [680, 191.00], [700, 196.60], [720, 202.20], [740, 207.80], [760, 213.50], [780, 219.10], [800, 224.70], [820, 230.30], [840, 235.90], [860, 241.50], [880, 247.20], [900, 252.80], [920, 258.40], [940, 264.00], [960, 269.60], [980, 275.20], [1000, 280.90], [1020, 286.50], [1040, 292.10]];
+
+        const popLocs = [
+            { c: "Poole Ag", n: "PCC Texline", lat: 36.3764334, lon: -103.0246997 },
+            { c: "Poole Ag", n: "PCC Dalhart", lat: 36.1055499, lon: -102.5844493 },
+            { c: "Poole Ag", n: "PCC Dimmitt", lat: 34.5243163, lon: -102.2867177 },
+            { c: "Poole Ag", n: "PCC Slaton", lat: 33.4535981, lon: -101.6564396 },
+            { c: "Poole Ag", n: "PCC Altus", lat: 34.6312274, lon: -99.305321 },
+            { c: "Poole Ag", n: "PCC Holcomb", lat: 37.9863314, lon: -100.9908653 },
+            { c: "Poole Ag", n: "PCC Oakley", lat: 39.1230127, lon: -100.8346464 },
+            { c: "Poole Ag", n: "PCC Monte Vista", lat: 37.5428812, lon: -106.0566054 },
+            { c: "Equalizer Midwest", n: "Equalizer Hastings", lat: 40.5831083, lon: -98.3053308 },
+            { c: "CF Industries", n: "CF Woodward", lat: 36.4370881, lon: -99.4745135 },
+            { c: "CF Industries", n: "CF Verdigris", lat: 36.2346705, lon: -95.7173474 },
+            { c: "CF Industries", n: "CF Port Neal", lat: 42.3370032, lon: -96.3685293 },
+            { c: "Nutrien", n: "Nutrien Borger", lat: 35.6421982, lon: -101.4284836 },
+            { c: "Koch Fertilizer", n: "Koch Beatrice", lat: 40.3195079, lon: -96.840581 },
+            { c: "Koch Fertilizer", n: "Koch Dodge", lat: 37.778725, lon: -99.9307257 },
+            { c: "Koch Fertilizer", n: "Koch Enid", lat: 36.3786236, lon: -97.764093 },
+            { c: "CHS", n: "CHS McPherson", lat: 38.3440444, lon: -97.6680178 },
+            { c: "Creston Fertilizer", n: "Creston Fertilizer", lat: 41.7068311, lon: -97.3649249 },
+            { c: "Oakley Fertilizer", n: "Oakley Port 33", lat: 36.1654023, lon: -95.6215894 },
+            { c: "Basin Coop", n: "Basin Cortez", lat: 37.4431984, lon: -108.6466542 },
+            { c: "Basin Coop", n: "Basin Durango", lat: 37.228275, lon: -107.8601997 },
+            { c: "Martin Resources", n: "Martin Plainview", lat: 34.2214805, lon: -101.7567761 },
+            { c: "Intrepid Potash", n: "Intrepid Carlsbad", lat: 32.5034551, lon: -103.7823237 },
+            { c: "Intrepid Potash", n: "Intrepid Moab", lat: 38.5215511, lon: -109.6584529 },
+            { c: "LSB Chemical", n: "LSB Pryor", lat: 36.242689, lon: -95.2779984 },
+            { c: "Bagwell Ag Services", n: "Bagwell Ag Groom", lat: 35.196605, lon: -101.1056794 },
+            { c: "Ag Ingenuity", n: "Ag Ingenuity Gruver", lat: 36.261522, lon: -101.406968 },
+            { c: "Farmers Ag Supply", n: "Farmers Ag Store", lat: 36.2035551, lon: -101.1913901 },
+            { c: "Boise City Farmers Coop", n: "BC Coop", lat: 36.7163198, lon: -102.5182178 },
+            { c: "Fertilizer Company of Arizona", n: "Fertizona Casa Grande", lat: 32.8540568, lon: -111.7234244 },
+            { c: "Fertilizer Company of Arizona", n: "Fertizona Yuma", lat: 32.6772587, lon: -114.5611212 },
+            { c: "Fertilizer Company of Arizona", n: "Fertizona Buckeye", lat: 33.377118, lon: -112.6277961 },
+            { c: "G+ Ag", n: "G+ Ag Hugoton", lat: 36.9967042, lon: -101.3724954 },
+            { c: "Blaine Larsen Farms", n: "Larsen Farms South Sedan HQ", lat: 36.078717, lon: -102.8760218 },
+            { c: "NOVUS Ag", n: "Novus Colon", lat: 41.3085616, lon: -96.6108545 },
+            { c: "NOVUS Ag", n: "Frontier Ag Wakeeney", lat: 39.0233823, lon: -99.8858471 },
+            { c: "Nutrien Ag Solutions", n: "Nutrien Oberlin", lat: 39.8356921, lon: -100.5334612 },
+            { c: "Simplot AB Retail", n: "Simplot Copeland", lat: 37.474618, lon: -100.7145067 },
+            { c: "Simplot AB Retail", n: "Simplot Cheyenne Wells", lat: 38.8160542, lon: -102.3353887 },
+            { c: "Simplot AB Retail", n: "Simplot Burlington", lat: 39.3208137, lon: -102.1470922 },
+            { c: "Simplot AB Retail", n: "Simplot Edson", lat: 39.339063, lon: -101.5755008 },
+            { c: "Simplot AB Retail", n: "Simplot Wray", lat: 40.0798611, lon: -102.2321664 },
+            { c: "Simplot AB Retail", n: "Simplot Anthony", lat: 32.0325846, lon: -106.601223 },
+            { c: "Simplot AB Retail", n: "Simplot Brownfield", lat: 33.1979623, lon: -102.276923 },
+            { c: "Simplot AB Retail", n: "Simplot Webbers Falls", lat: 35.4892275, lon: -95.1230922 },
+            { c: "Wheeler Brothers Grain", n: "Wheeler Bros Alva", lat: 36.8074057, lon: -98.6643246 },
+            { c: "Wheeler Brothers Grain", n: "Wheeler Bros Canton", lat: 36.0545887, lon: -98.5906332 },
+            { c: "Wheeler Brothers Grain", n: "Wheeler Bros Geary", lat: 35.6267763, lon: -98.3136556 },
+            { c: "Wheeler Brothers Grain", n: "Wheeler Bros Hydro", lat: 35.5450222, lon: -98.5781304 },
+            { c: "Wheeler Brothers Grain", n: "Wheeler Bros Kingfisher", lat: 35.8644582, lon: -97.9407481 },
+            { c: "Wheeler Brothers Grain", n: "Wheeler Bros Seiling", lat: 36.144817, lon: -98.9372475 },
+            { c: "Wheeler Brothers Grain", n: "Wheeler Bros Taloga", lat: 36.0410715, lon: -98.9611362 },
+            { c: "Wheeler Brothers Grain", n: "Wheeler Bros Thomas", lat: 35.7426306, lon: -98.7387273 },
+            { c: "Wheeler Brothers Grain", n: "Wheeler Bros Watonga", lat: 35.8415663, lon: -98.4187355 },
+            { c: "Oklahoma Kansas Cooperative", n: "OK-KS Coop - Amorita", lat: 36.9246424, lon: -98.2939629 },
+            { c: "Oklahoma Kansas Cooperative", n: "OK-KS Coop - Hazelton", lat: 37.0911435, lon: -98.4073407 },
+            { c: "Oklahoma Kansas Cooperative", n: "OK-KS Coop - Kiowa", lat: 37.0173048, lon: -98.4924389 },
+            { c: "Oklahoma Kansas Cooperative", n: "OK-KS Coop - Burlington", lat: 36.9001996, lon: -98.4239662 },
+            { c: "Flagler Aerial", n: "Flagler Aerial", lat: 39.2799346, lon: -103.0616594 },
+            { c: "Farmers Coop Equity", n: "Farmers Coop Isabel", lat: 37.467575, lon: -98.5521705 },
+            { c: "Hi Plains Ponderosa Dairy", n: "Hi Plains Dairy - Plains", lat: 37.1685646, lon: -100.6346307 },
+            { c: "Frontier Fertilizer", n: "Frontier Fertilizer Johnstown", lat: 40.3379157, lon: -104.9047555 },
+            { c: "EGE Products", n: "EGE Mineola", lat: 37.448352, lon: -100.0441521 },
+            { c: "First Rate Ag", n: "First Rate Ag Holdrege", lat: 40.4398113, lon: -99.4562896 },
+            { c: "McCune Coop", n: "McCune Coop", lat: 37.3513032, lon: -95.0188792 },
+            { c: "Hi-Line Cooperative", n: "Hi-Line McCook", lat: 40.1996541, lon: -100.6022076 },
+            { c: "Hi-Line Cooperative", n: "Hi-Line Brule", lat: 41.0896718, lon: -101.8875358 },
+            { c: "Hi-Line Cooperative", n: "Hi-Line Grant", lat: 40.8407783, lon: -101.7085756 },
+            { c: "Hi-Line Cooperative", n: "Hi-Line Wallace", lat: 40.835627, lon: -101.1627124 },
+            { c: "Hi-Line Cooperative", n: "Hi-Line Sutherland", lat: 41.1551447, lon: -101.1245666 },
+            { c: "Mid-Kansas Ag", n: "Mid-Kansas Ag St. John", lat: 37.9866666, lon: -98.7653082 },
+            { c: "Western Consolidated Coop", n: "Western Consolidated Holloway", lat: 45.2475319, lon: -95.9050707 },
+            { c: "Ag Valley Coop", n: "Ag Valley Edison", lat: 40.2803626, lon: -99.7758615 },
+            { c: "Ag Valley Coop", n: "Ag Valley North Platte", lat: 41.1399892, lon: -100.7587442 },
+        ];
+
+        function getRate(miles, type) {
+            let sortedRates = type === 'liquid' ? ratesLiquidDry : ratesNH3;
+
+            // Return minimum rate if below shortest distance
+            if (miles <= sortedRates[0][0]) return sortedRates[0][1];
+
+            // Find matching or next highest mileage step
+            for (let i = 0; i < sortedRates.length; i++) {
+                if (miles <= sortedRates[i][0]) {
+                    return sortedRates[i][1];
+                }
+            }
+
+            // If miles exceed the highest value in table, use the per-mile cost ratio of the max limit
+            let maxStep = sortedRates[sortedRates.length - 1];
+            let maxRatePerMile = maxStep[1] / maxStep[0];
+            return parseFloat((miles * maxRatePerMile).toFixed(2));
+        }
+        // Google Maps Utilities
+        const GOOGLE_API_KEY = "AIzaSyCN9razTK6csxQcrQ_C9DmM7DyZCIH4Hxc";
+        let googleSessions = { 'origin': null, 'destination': null };
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Autocomplete Logic
+        let debounceTimer;
+        function setupAutocomplete(inputId, listId, clearBtnId) {
+            let input = document.getElementById(inputId);
+            let list = document.getElementById(listId);
+            let clearBtn = document.getElementById(clearBtnId);
+
+            clearBtn.addEventListener('click', function () {
+                input.value = '';
+                input.removeAttribute('data-lat');
+                input.removeAttribute('data-lon');
+                input.removeAttribute('data-placeid');
+                clearBtn.style.display = 'none';
+                list.style.display = 'none';
+                input.focus();
+            });
+
+            input.addEventListener('input', function () {
+                input.removeAttribute('data-lat');
+                input.removeAttribute('data-lon');
+                input.removeAttribute('data-placeid');
+                clearBtn.style.display = this.value.length > 0 ? 'block' : 'none';
+
+                // Mint a fresh Session Token UUID
+                if (!googleSessions[inputId]) {
+                    googleSessions[inputId] = generateUUID();
+                }
+
+                clearTimeout(debounceTimer);
+                let val = this.value.trim().toLowerCase();
+                if (val.length < 2) {
+                    list.style.display = 'none';
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    list.innerHTML = '';
+                    let hasResults = false;
+
+                    let matches = popLocs.filter(loc => loc.n.toLowerCase().includes(val) || loc.c.toLowerCase().includes(val));
+                    if (matches.length > 0) {
+                        hasResults = true;
+                        matches.forEach(m => {
+                            let div = document.createElement('div');
+                            div.className = 'autocomplete-item';
+                            div.innerHTML = `<strong>${m.n}</strong> <span style="font-size: 0.75rem; color: #94a3b8;">(${m.c})</span>`;
+                            div.onclick = function () {
+                                input.value = m.n;
+                                input.setAttribute('data-lat', m.lat);
+                                input.setAttribute('data-lon', m.lon);
+                                list.style.display = 'none';
+                            };
+                            list.appendChild(div);
+                        });
+                        list.style.display = 'block';
+                    } else {
+                        list.style.display = 'none';
+                    }
+
+                    // Fetch fallback online via modern Google Places REST API
+                    let payload = {
+                        input: val,
+                        sessionToken: googleSessions[inputId],
+                        includedRegionCodes: ["us"]
+                    };
+
+                    fetch("https://places.googleapis.com/v1/places:autocomplete", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "X-Goog-Api-Key": GOOGLE_API_KEY },
+                        body: JSON.stringify(payload)
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.error) throw new Error(data.error.message);
+                            if (data.suggestions && data.suggestions.length > 0) {
+                                if (hasResults) {
+                                    let sep = document.createElement('div');
+                                    sep.style = "padding: 0.25rem 1rem; font-size: 0.7rem; color: #94a3b8; background: rgba(255,255,255,0.05); text-transform: uppercase; font-weight: bold;";
+                                    sep.innerText = "Google Maps Databases";
+                                    list.appendChild(sep);
+                                }
+
+                                data.suggestions.slice(0, 5).forEach(s => {
+                                    let div = document.createElement('div');
+                                    div.className = 'autocomplete-item';
+                                    div.innerText = s.placePrediction.text.text;
+                                    div.onclick = function () {
+                                        input.value = s.placePrediction.text.text;
+                                        input.removeAttribute('data-lat');
+                                        input.removeAttribute('data-lon');
+                                        input.setAttribute('data-placeid', s.placePrediction.placeId);
+                                        list.style.display = 'none';
+                                    };
+                                    list.appendChild(div);
+                                });
+
+                                if (!hasResults) list.style.display = 'block';
+                                hasResults = true;
+                            }
+                        })
+                        .catch(err => {
+                            let errDiv = document.createElement('div');
+                            errDiv.style = "padding: 0.5rem 1rem; color: #f87171; font-size: 0.75rem; text-align: center;";
+                            errDiv.innerText = "API Fetch Error: " + err.message;
+                            list.appendChild(errDiv);
+                            list.style.display = 'block';
+                        });
+                }, 100);
+            });
+
+            // Hide list when clicking outside
+            document.addEventListener('click', function (e) {
+                if (e.target !== input && e.target !== list && !list.contains(e.target) && e.target !== clearBtn) {
                     list.style.display = 'none';
                 }
-                
-                // Fetch fallback online dynamically matching text without blocking ui
-                fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(val)}&limit=10`)
-                    .then(res => { if (!res.ok) throw new Error(); return res.json(); })
-                    .then(data => {
-                        let usFeatures = (data.features || []).filter(f => f.properties.countrycode === 'US').slice(0, 5);
-                        if (usFeatures.length > 0) {
-                            if (hasResults) {
-                                let sep = document.createElement('div');
-                                sep.style = "padding: 0.25rem 1rem; font-size: 0.7rem; color: #94a3b8; background: rgba(255,255,255,0.05); text-transform: uppercase; font-weight: bold;";
-                                sep.innerText = "Other Locations";
-                                list.appendChild(sep);
-                            }
-                            
-                            usFeatures.forEach(f => {
-                                let props = f.properties;
-                                let nameParts = [props.name, props.city || props.town || props.village, props.state, props.country].filter(Boolean);
-                                let uniqueParts = [...new Set(nameParts)];
-                                let nameText = uniqueParts.join(', ');
-                                
-                                let div = document.createElement('div');
-                                div.className = 'autocomplete-item';
-                                div.innerText = nameText;
-                                div.onclick = function() {
-                                    input.value = nameText;
-                                    input.removeAttribute('data-lat');
-                                    input.removeAttribute('data-lon');
-                                    list.style.display = 'none';
-                                };
-                                list.appendChild(div);
-                            });
-                            
-                            if (!hasResults) list.style.display = 'block';
-                            hasResults = true;
-                        }
-                    })
-                    .catch(e => console.error("Autocomplete online fallback failed:", e));
-            }, 100);
-        });
-        
-        // Hide list when clicking outside
-        document.addEventListener('click', function(e) {
-            if (e.target !== input && e.target !== list && !list.contains(e.target) && e.target !== clearBtn) {
-                list.style.display = 'none';
+            });
+        }
+
+        setupAutocomplete('origin', 'origin-list', 'clear-origin');
+        setupAutocomplete('destination', 'dest-list', 'clear-dest');
+
+        async function geocode(address) {
+            let payload = { textQuery: address + ", USA" };
+            let res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Goog-Api-Key": GOOGLE_API_KEY,
+                    // Requesting only the core latitude/longitude field keeps it cheap
+                    "X-Goog-FieldMask": "places.location"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            let data = await res.json();
+            if (data.error) throw new Error(data.error.message);
+            if (!data.places || data.places.length === 0) throw new Error("Could not definitively locate address: " + address);
+
+            return { lat: data.places[0].location.latitude, lon: data.places[0].location.longitude };
+        }
+
+        async function resolveLocation(inputId) {
+            let input = document.getElementById(inputId);
+            let lat = input.getAttribute('data-lat');
+            let lon = input.getAttribute('data-lon');
+            let placeId = input.getAttribute('data-placeid');
+
+            if (lat && lon) {
+                googleSessions[inputId] = null; // Drop unused session token
+                return { lat: parseFloat(lat), lon: parseFloat(lon) };
             }
-        });
-    }
 
-    setupAutocomplete('origin', 'origin-list', 'clear-origin');
-    setupAutocomplete('destination', 'dest-list', 'clear-dest');
+            // Securely translate PlaceID into geometry via REST and explicitly feed the Session Token to terminate the billing queue
+            if (placeId) {
+                let res = await fetch(`https://places.googleapis.com/v1/places/${placeId}?sessionToken=${googleSessions[inputId]}`, {
+                    method: "GET",
+                    headers: { "X-Goog-Api-Key": GOOGLE_API_KEY, "X-Goog-FieldMask": "location" }
+                });
+                let data = await res.json();
+                googleSessions[inputId] = null; // Systematically wipe the token after consumption
 
-    async function geocode(address) {
-        let url = `https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=10`;
-        let res = await fetch(url);
-        if (!res.ok) throw new Error("Our location service is temporarily offline. Please try again soon.");
-        let data = await res.json();
-        let usFeatures = (data.features || []).filter(f => f.properties.countrycode === 'US');
-        if (usFeatures.length === 0) throw new Error("Could not find exact location in the US: " + address);
-        let coords = usFeatures[0].geometry.coordinates;
-        return { lon: coords[0], lat: coords[1] };
-    }
-    
-    async function resolveLocation(inputId) {
-        let input = document.getElementById(inputId);
-        let lat = input.getAttribute('data-lat');
-        let lon = input.getAttribute('data-lon');
-        if (lat && lon) {
-            return { lat: parseFloat(lat), lon: parseFloat(lon) };
-        }
-        
-        let val = input.value.trim().toLowerCase();
-        let exactLocal = popLocs.find(loc => loc.n.toLowerCase() === val || (loc.n + ", " + loc.c).toLowerCase() === val);
-        if (exactLocal) {
-            return { lat: exactLocal.lat, lon: exactLocal.lon };
-        }
-        
-        return await geocode(input.value);
-    }
-
-    function decodePolyline(str) {
-        let index = 0, lat = 0, lng = 0, coordinates = [], shift, result, byte, lat_change, lng_change;
-        while (index < str.length) {
-            byte = null; shift = 0; result = 0;
-            do { byte = str.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
-            lat_change = ((result & 1) ? ~(result >> 1) : (result >> 1)); lat += lat_change;
-            shift = 0; result = 0;
-            do { byte = str.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
-            lng_change = ((result & 1) ? ~(result >> 1) : (result >> 1)); lng += lng_change;
-            // Valhalla uses precision 6 (1e6 factor)
-            coordinates.push([lng / 1e6, lat / 1e6]);
-        }
-        return coordinates;
-    }
-
-    async function getDistance(coord1, coord2, isShortest) {
-        // Upgraded to massively parallelized Valhalla routing to prevent OSRM server timeouts
-        let payload = {
-            locations: [{ lon: coord1.lon, lat: coord1.lat }, { lon: coord2.lon, lat: coord2.lat }],
-            costing: "auto",
-            costing_options: {
-                auto: {
-                    // We removed the 'shortest' parameter to enable Practical Routing (fastest time), which aligns with Google Maps and prevents rural-grid algorithmic zig-zagging.
-                    // 0.1 strongly penalizes unpaved/gravel roads, favoring asphalt, but still permits last-mile gravel routing if the destination is on a farm.
-                    use_unpaved: 0.1
+                if (data.error) throw new Error(data.error.message);
+                if (data.location) {
+                    return { lat: data.location.latitude, lon: data.location.longitude };
+                } else {
+                    throw new Error("Could not extract GPS points for selected Google Location.");
                 }
-            },
-            directions_options: { units: "miles" }
-        };
-        
-        if (isShortest) {
-            payload.costing_options.auto.shortest = true;
-        }
-        
-        let res = await fetch("https://valhalla1.openstreetmap.de/route", {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        
-        if (!res.ok) throw new Error("Routing service failed. Please try again.");
-        let data = await res.json();
-        
-        if (!data.trip || !data.trip.summary) throw new Error("Could not calculate a viable driving route.");
-        
-        let miles = parseFloat(data.trip.summary.length.toFixed(1));
-        let coordinates = decodePolyline(data.trip.legs[0].shape);
-        
-        return { miles: miles, geometry: { type: "LineString", coordinates: coordinates } };
-    }
-    
-    let map = null;
-    let routeLayer = null;
-
-    function renderMap(geometry) {
-        let mapContainer = document.getElementById('mapContainer');
-        mapContainer.style.display = 'block';
-        
-        if (!map) {
-            map = L.map('mapContainer');
-            // Upgraded to CARTO Voyager tiles to permanently bypass the OSM 403 referer blocks!
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap, &copy; CARTO',
-                maxZoom: 19
-            }).addTo(map);
-        }
-        
-        if (routeLayer) {
-            map.removeLayer(routeLayer);
-        }
-        
-        routeLayer = L.geoJSON(geometry, {
-            style: { color: '#3b82f6', weight: 4, opacity: 0.8 }
-        }).addTo(map);
-        
-        map.fitBounds(routeLayer.getBounds(), { padding: [20, 20] });
-        
-        // Ensure map renders properly when div becomes visible
-        setTimeout(() => map.invalidateSize(), 150);
-    }
-
-    document.getElementById('calcBtn').addEventListener('click', async () => {
-        let origin = document.getElementById('origin').value.trim();
-        let destination = document.getElementById('destination').value.trim();
-        let type = document.querySelector('input[name="freightType"]:checked').value;
-        
-        let msg = document.getElementById('errorMsg');
-        let resCard = document.getElementById('resultCard');
-        let btnText = document.getElementById('btnText');
-        let loader = document.getElementById('btnLoader');
-        let btn = document.getElementById('calcBtn');
-
-        msg.style.display = 'none';
-        resCard.style.display = 'none';
-        document.getElementById('mapContainer').style.display = 'none';
-
-        if (!origin || !destination) {
-            msg.innerText = "Please enter both origin and destination cities/zips.";
-            msg.style.display = 'block';
-            return;
-        }
-
-        btn.disabled = true;
-        btnText.style.display = 'none';
-        loader.style.display = 'block';
-
-        try {
-            // Handle local attributes or run geocoding seamlessly in parallel
-            let [p1, p2] = await Promise.all([
-                resolveLocation('origin'),
-                resolveLocation('destination')
-            ]);
-            
-            // Phase 1: Request Shortest Route natively and instantly render it to eliminate perceived lag
-            let shortRoute = await getDistance(p1, p2, true);
-            let rate1 = getRate(shortRoute.miles, type);
-            
-            document.getElementById('resDistance').innerText = shortRoute.miles.toLocaleString() + " miles";
-            document.getElementById('resRate').innerText = "$" + rate1.toFixed(2);
-            resCard.style.display = 'flex';
-            renderMap(shortRoute.geometry);
-            
-            // Release the UI instantly so it feels blazing fast
-            btnText.style.display = 'block';
-            loader.style.display = 'none';
-            btn.disabled = false;
-            
-            // Phase 2: Wait 1100ms to clear rate limits, then imperceptibly calculate Fastest Route in background
-            await new Promise(r => setTimeout(r, 1100));
-            let fastRoute = await getDistance(p1, p2, false);
-            
-            // If the Fastest routing corrects a "Quasi-Shortest" mapping error and physically drops the total mileage, seamlessly update the screen
-            if (fastRoute.miles < shortRoute.miles) {
-                let rate2 = getRate(fastRoute.miles, type);
-                document.getElementById('resDistance').innerText = fastRoute.miles.toLocaleString() + " miles (Optimized)";
-                document.getElementById('resRate').innerText = "$" + rate2.toFixed(2);
-                renderMap(fastRoute.geometry);
             }
-            
-        } catch (e) {
-            msg.innerText = e.message;
-            msg.style.display = 'block';
-        } finally {
-            btn.disabled = false;
-            btnText.style.display = 'block';
-            loader.style.display = 'none';
-        }
-    });
 
-    // Register PWA Service Worker
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').catch(err => {
-                console.log('ServiceWorker registration failed: ', err);
+            googleSessions[inputId] = null; // Drop unused session token
+            let val = input.value.trim().toLowerCase();
+            let exactLocal = popLocs.find(loc => loc.n.toLowerCase() === val || (loc.n + ", " + loc.c).toLowerCase() === val);
+            if (exactLocal) {
+                return { lat: exactLocal.lat, lon: exactLocal.lon };
+            }
+
+            return await geocode(input.value);
+        }
+
+        function decodePolyline(str, isValhalla = false) {
+            let index = 0, lat = 0, lng = 0, coordinates = [], shift, result, byte, lat_change, lng_change;
+            let factor = isValhalla ? 1e6 : 1e5; // Google natively uses 1e5, Valhalla pushes 1e6
+            while (index < str.length) {
+                byte = null; shift = 0; result = 0;
+                do { byte = str.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
+                lat_change = ((result & 1) ? ~(result >> 1) : (result >> 1)); lat += lat_change;
+                shift = 0; result = 0;
+                do { byte = str.charCodeAt(index++) - 63; result |= (byte & 0x1f) << shift; shift += 5; } while (byte >= 0x20);
+                lng_change = ((result & 1) ? ~(result >> 1) : (result >> 1)); lng += lng_change;
+                coordinates.push([lng / factor, lat / factor]);
+            }
+            return coordinates;
+        }
+
+        async function getDistance(coord1, coord2) {
+            // Deterministic cache key based on geometric coordinate pairing (accurate to ~30 feet)
+            let cacheKey = `R_${coord1.lat.toFixed(4)}_${coord1.lon.toFixed(4)}_${coord2.lat.toFixed(4)}_${coord2.lon.toFixed(4)}`;
+            let cachedContent = localStorage.getItem(cacheKey);
+
+            // If a dispatcher has naturally queried this exact coordinate pair before, natively extract it instantly for $0.00
+            if (cachedContent) {
+                let data = JSON.parse(cachedContent);
+                return {
+                    miles: data.miles,
+                    geometry: { type: "LineString", coordinates: decodePolyline(data.polyline, false) }
+                };
+            }
+
+            // Construct the modern Google Maps Compute Routes V2 payload
+            let payload = {
+                origin: { location: { latLng: { latitude: coord1.lat, longitude: coord1.lon } } },
+                destination: { location: { latLng: { latitude: coord2.lat, longitude: coord2.lon } } },
+                travelMode: "DRIVE",
+                routingPreference: "TRAFFIC_UNAWARE", // Mathematically computes raw geographic highway layout without real-time jam variables
+                units: "IMPERIAL"
+            };
+
+            // Execute Cross-Origin fetch against the official Google server
+            let res = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Goog-Api-Key': GOOGLE_API_KEY,
+                    // FieldMask strictly limits what Google calculates to keep the API blazing fast and cheap
+                    'X-Goog-FieldMask': 'routes.distanceMeters,routes.polyline.encodedPolyline'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error("Google API rejected the request. Please verify your billing account and API key setup.");
+            let data = await res.json();
+
+            if (!data.routes || data.routes.length === 0) throw new Error("Google Maps mapping satellite found no viable driving route.");
+
+            // Converts the raw meters directly into visually formatted decimals
+            let miles = parseFloat((data.routes[0].distanceMeters * 0.000621371).toFixed(1));
+            let polylineStr = data.routes[0].polyline.encodedPolyline;
+
+            // Mathematically inject compressed line string exactly into local disk memory array.
+            // Bypassing full array saving allows thousands of routes to exist silently on Chrome LocalStorage!
+            try { localStorage.setItem(cacheKey, JSON.stringify({ miles: miles, polyline: polylineStr })); } catch (e) { }
+
+            let coordinates = decodePolyline(polylineStr, false);
+            return { miles: miles, geometry: { type: "LineString", coordinates: coordinates } };
+        }
+
+        let map = null;
+        let routeLayer = null;
+
+        function renderMap(geometry) {
+            let mapContainer = document.getElementById('mapContainer');
+            mapContainer.style.display = 'block';
+
+            if (!map) {
+                map = L.map('mapContainer');
+                // Upgraded to CARTO Voyager tiles to permanently bypass the OSM 403 referer blocks!
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; OpenStreetMap, &copy; CARTO',
+                    maxZoom: 19
+                }).addTo(map);
+            }
+
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+            }
+
+            routeLayer = L.geoJSON(geometry, {
+                style: { color: '#3b82f6', weight: 4, opacity: 0.8 }
+            }).addTo(map);
+
+            map.fitBounds(routeLayer.getBounds(), { padding: [20, 20] });
+
+            // Ensure map renders properly when div becomes visible
+            setTimeout(() => map.invalidateSize(), 150);
+        }
+
+        document.getElementById('calcBtn').addEventListener('click', async () => {
+            let origin = document.getElementById('origin').value.trim();
+            let destination = document.getElementById('destination').value.trim();
+            let type = document.querySelector('input[name="freightType"]:checked').value;
+
+            let msg = document.getElementById('errorMsg');
+            let resCard = document.getElementById('resultCard');
+            let btnText = document.getElementById('btnText');
+            let loader = document.getElementById('btnLoader');
+            let btn = document.getElementById('calcBtn');
+
+            msg.style.display = 'none';
+            resCard.style.display = 'none';
+            document.getElementById('mapContainer').style.display = 'none';
+
+            if (!origin || !destination) {
+                msg.innerText = "Please enter both origin and destination cities/zips.";
+                msg.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            loader.style.display = 'block';
+
+            try {
+                // Handle local attributes or run geocoding seamlessly in parallel
+                let [p1, p2] = await Promise.all([
+                    resolveLocation('origin'),
+                    resolveLocation('destination')
+                ]);
+
+                // Execute massive Google Maps query directly
+                let routeObj = await getDistance(p1, p2);
+                let rateM = getRate(routeObj.miles, type);
+
+                document.getElementById('resDistance').innerText = routeObj.miles.toLocaleString() + " miles";
+                document.getElementById('resRate').innerText = "$" + rateM.toFixed(2);
+                resCard.style.display = 'flex';
+                renderMap(routeObj.geometry);
+
+            } catch (e) {
+                msg.innerText = e.message;
+                msg.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btnText.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        });
+
+        // Register PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+
+        // Authorization Logic
+        const REQUIRED_PIN = "1234";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            let savedPin = localStorage.getItem("dispatchPin");
+            if (savedPin === REQUIRED_PIN) {
+                document.getElementById("authOverlay").style.display = "none";
+            }
+
+            document.getElementById("loginBtn").addEventListener("click", () => {
+                let val = document.getElementById("pinInput").value;
+                if (val === REQUIRED_PIN) {
+                    localStorage.setItem("dispatchPin", val);
+                    document.getElementById("authOverlay").style.display = "none";
+                } else {
+                    document.getElementById("loginError").style.display = "block";
+                    document.getElementById("pinInput").value = "";
+                    setTimeout(() => { document.getElementById("loginError").style.display = "none"; }, 3000);
+                }
+            });
+
+            document.getElementById("pinInput").addEventListener("keypress", (e) => {
+                if (e.key === 'Enter') document.getElementById("loginBtn").click();
             });
         });
-    }
-</script>
+
+    </script>
 
 </body>
-</html>
 
+</html>

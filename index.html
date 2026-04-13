@@ -397,22 +397,92 @@
             align-items: center;
             padding: 1rem;
         }
+
+        @media (min-width: 768px) {
+            .container {
+                max-width: 850px;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem 2rem;
+                align-items: start;
+            }
+
+            .container>h1 {
+                grid-column: 1 / -1;
+            }
+
+            .container>.input-group,
+            .container>button,
+            .container>.error-msg {
+                grid-column: 1;
+            }
+
+            .container>.result-card {
+                grid-column: 2;
+                grid-row: 2 / 7;
+                margin-top: 0;
+                height: 100%;
+            }
+
+            .container>.version-footer {
+                grid-column: 1 / -1;
+            }
+
+            #mapContainer {
+                min-height: 300px;
+                flex-grow: 1;
+            }
+        }
     </style>
+
 </head>
 
 <body>
+    <div id="settingsBtn"
+        style="position: absolute; top: 1.5rem; right: 1.5rem; cursor: pointer; z-index: 1000; color: rgba(255,255,255,0.7); transition: color 0.2s;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
+        </svg>
+    </div>
 
-    <div class="pin-overlay" id="pinOverlay">
-        <div class="pin-box">
-            <h2 style="margin-bottom: 0.5rem;">Dispatch Login</h2>
-            <p style="color: var(--text-muted); font-size: 0.875rem;">Authentication Required</p>
-            <form id="pinForm" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-                <input type="password" class="pin-input" id="pinInput" placeholder="••••" maxlength="12" enterkeyhint="enter" autocomplete="off">
-                <button type="submit" id="pinSubmitBtn" style="margin-top: 1rem; width: 80%; padding: 0.75rem; font-size: 1rem;">Enter</button>
-            </form>
-            <div id="pinError" style="color: var(--danger); font-size: 0.8rem; margin-top: 0.5rem; display: none;">
-                Invalid Auth Code</div>
+    <div class="settings-modal" id="settingsModal"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); z-index: 9999; justify-content: center; align-items: center; padding: 1rem;">
+        <div class="container" style="text-align: center; gap: 1rem; position: relative;">
+            <button id="closeSettings"
+                style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; padding: 0.25rem; font-size: 1.5rem; width: auto; margin:0; box-shadow: none; color: var(--text-muted);">&times;</button>
+            <h1 style="color: var(--text-main); font-size: 1.6rem; margin-bottom: 0;">App Settings</h1>
+
+            <div id="loginSection" style="display: none;">
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Enter secure PIN to access routing engine.</p>
+                <form id="loginForm"
+                    style="display:flex; flex-direction:column; align-items:center; width:100%; margin-bottom:0;">
+                    <div class="input-wrapper" style="margin-top: 1.5rem; width:80%;">
+                        <input type="password" id="pinInput" placeholder="••••" maxlength="12" enterkeyhint="enter"
+                            autocomplete="off"
+                            style="text-align: center; letter-spacing: 0.75rem; font-size: 1.5rem; font-weight: 700; padding: 1rem; border-radius:1rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color:white; width: 100%;">
+                    </div>
+                    <button type="submit" id="loginBtn" style="margin-top: 1rem; width:80%;">Unlock Engine</button>
+                </form>
+                <p id="pinError"
+                    style="color: var(--danger); font-size: 0.875rem; display: none; margin-top: 0.5rem; font-weight: 500;">
+                    Incorrect PIN</p>
+            </div>
+
+            <div id="logoutSection" style="display: none;">
+                <p style="color: var(--primary); font-size: 0.9rem; margin-bottom: 1rem;">Authenticated as Dispatcher
+                </p>
+                <button id="logoutBtn" style="background: var(--danger); width:80%; margin: 0 auto;">Logout & Clear
+                    Keys</button>
+            </div>
         </div>
+    </div>
+
+
+
     </div>
 
     <div class="container">
@@ -471,28 +541,74 @@
         </div>
 
         <div class="version-footer">
-            v2.0.0 | Rates Effective 2026 Mar 30
+            v2.5.0 | Rates Effective 2026 Mar 30
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Pin Authentication Logic
-        const pinOverlay = document.getElementById('pinOverlay');
-        const pinInput = document.getElementById('pinInput');
-        const pinError = document.getElementById('pinError');
-
-        if (localStorage.getItem('dispatchAuth') === 'texline') {
-            pinOverlay.style.display = 'none';
+        // Cipher Algorithm
+        function decryptKey(b64Cipher, password) {
+            try {
+                const cipherText = atob(b64Cipher);
+                let out = '';
+                for (let i = 0; i < cipherText.length; i++) {
+                    out += String.fromCharCode(cipherText.charCodeAt(i) ^ password.charCodeAt(i % password.length));
+                }
+                return out;
+            } catch (e) {
+                return null;
+            }
         }
 
-        const pinForm = document.getElementById('pinForm');
+
+        // Modal Logic
+        const settingsModal = document.getElementById('settingsModal');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const closeSettings = document.getElementById('closeSettings');
+        const loginSection = document.getElementById('loginSection');
+        const logoutSection = document.getElementById('logoutSection');
+
+        const pinInput = document.getElementById('pinInput');
+        const pinError = document.getElementById('pinError');
+        const loginForm = document.getElementById('loginForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        function updateModalState() {
+            if (localStorage.getItem('dispatchAuth') === 'texline' && localStorage.getItem('google_maps_api_key')) {
+                loginSection.style.display = 'none';
+                logoutSection.style.display = 'block';
+                GOOGLE_API_KEY = localStorage.getItem('google_maps_api_key');
+            } else {
+                loginSection.style.display = 'block';
+                logoutSection.style.display = 'none';
+            }
+        }
+
+        settingsBtn.addEventListener('click', () => {
+            updateModalState();
+            settingsModal.style.display = 'flex';
+        });
+
+        closeSettings.addEventListener('click', () => {
+            settingsModal.style.display = 'none';
+        });
 
         function handlePinAuth() {
             if (pinInput.value === 'texline') {
                 localStorage.setItem('dispatchAuth', 'texline');
-                pinOverlay.style.opacity = '0';
-                setTimeout(() => pinOverlay.style.display = 'none', 300);
+                fetch('keys.txt')
+                    .then(res => res.text())
+                    .then(b64 => {
+                        const decrypted = decryptKey(b64.trim(), pinInput.value);
+                        if (decrypted) {
+                            localStorage.setItem('google_maps_api_key', decrypted);
+                            GOOGLE_API_KEY = decrypted;
+                            pinInput.value = '';
+                            updateModalState();
+                            settingsModal.style.display = 'none';
+                        }
+                    }).catch(e => console.error("Could not fetch keys:", e));
             } else {
                 pinError.style.display = 'block';
                 pinInput.value = '';
@@ -500,17 +616,23 @@
             }
         }
 
-        pinForm.addEventListener('submit', function (e) {
+        loginForm.addEventListener('submit', function (e) {
             e.preventDefault();
             handlePinAuth();
         });
 
-        pinInput.addEventListener('keyup', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                handlePinAuth();
-            }
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('google_maps_api_key');
+            localStorage.removeItem('dispatchAuth');
+            GOOGLE_API_KEY = null;
+            updateModalState();
         });
+
+        // Open modal immediately if not authenticated
+        if (!localStorage.getItem('dispatchAuth') || !localStorage.getItem('google_maps_api_key')) {
+            updateModalState();
+            settingsModal.style.display = 'flex';
+        }
 
         const ratesLiquidDry = [[50, 13.00], [60, 14.40], [70, 16.50], [80, 17.50], [90, 19.50], [100, 22.50], [110, 24.80], [120, 27.10], [130, 29.30], [140, 31.60], [150, 33.90], [160, 36.00], [170, 38.20], [180, 40.50], [190, 42.80], [200, 45.00], [210, 47.30], [220, 49.60], [230, 51.80], [240, 54.10], [250, 56.40], [260, 58.50], [270, 60.70], [280, 63.00], [290, 65.30], [300, 67.50], [310, 69.80], [320, 72.10], [330, 74.30], [340, 76.60], [350, 78.70], [360, 80.90], [370, 83.20], [380, 85.50], [390, 87.70], [400, 90.00], [410, 92.30], [420, 94.50], [430, 96.80], [440, 99.10], [450, 101.30], [460, 103.60], [470, 105.90], [480, 108.10], [490, 110.40], [500, 112.70], [520, 116.90], [540, 121.40], [560, 126.10], [580, 130.80], [600, 135.30], [620, 139.50]];
         const ratesNH3 = [[50, 23.40], [60, 26.80], [70, 28.90], [80, 31.20], [90, 37.50], [100, 41.00], [110, 43.50], [120, 45.60], [130, 47.30], [140, 49.40], [150, 52.20], [160, 54.50], [170, 56.60], [180, 58.70], [190, 60.80], [200, 62.90], [210, 65.00], [220, 67.30], [230, 69.70], [240, 72.20], [250, 74.70], [260, 77.30], [270, 79.80], [280, 82.50], [290, 85.30], [300, 88.20], [310, 91.00], [320, 93.70], [330, 96.70], [340, 99.40], [350, 102.10], [360, 104.70], [370, 107.20], [380, 109.70], [390, 112.30], [400, 114.80], [410, 117.50], [420, 120.30], [430, 123.40], [440, 126.10], [450, 129.10], [460, 132.10], [470, 134.60], [480, 137.60], [490, 140.40], [500, 142.20], [520, 147.30], [540, 152.40], [560, 157.40], [580, 163.50], [600, 168.80], [620, 174.10], [640, 179.80], [660, 185.40], [680, 191.00], [700, 196.60], [720, 202.20], [740, 207.80], [760, 213.50], [780, 219.10], [800, 224.70], [820, 230.30], [840, 235.90], [860, 241.50], [880, 247.20], [900, 252.80], [920, 258.40], [940, 264.00], [960, 269.60], [980, 275.20], [1000, 280.90], [1020, 286.50], [1040, 292.10]];
@@ -518,6 +640,8 @@
         const popLocs = [
             { c: "Poole Ag", n: "PCC Texline", lat: 36.3764334, lon: -103.0246997 },
             { c: "Poole Ag", n: "PCC Dalhart", lat: 36.1055499, lon: -102.5844493 },
+            { c: "Poole Ag", n: "PCC Dalhart South", lat: 36.074109, lon: -102.5334355 },
+            { c: "Poole Ag", n: "PCC Dalhart UP Siding", lat: 36.0698258, lon: -102.5139819 },
             { c: "Poole Ag", n: "PCC Dimmitt", lat: 34.5243163, lon: -102.2867177 },
             { c: "Poole Ag", n: "PCC Slaton", lat: 33.4535981, lon: -101.6564396 },
             { c: "Poole Ag", n: "PCC Altus", lat: 34.6312274, lon: -99.305321 },
@@ -538,7 +662,8 @@
             { c: "Basin Coop", n: "Basin Cortez", lat: 37.4431984, lon: -108.6466542 },
             { c: "Basin Coop", n: "Basin Durango", lat: 37.228275, lon: -107.8601997 },
             { c: "Martin Resources", n: "Martin Plainview", lat: 34.2214805, lon: -101.7567761 },
-            { c: "Intrepid Potash", n: "Intrepid Carlsbad", lat: 32.5034551, lon: -103.7823237 },
+            { c: "Intrepid Potash", n: "Intrepid Carlsbad East", lat: 32.5034551, lon: -103.7823237 },
+            { c: "Intrepid Potash", n: "Intrepid Carlsbad West", lat: 32.4895105, lon: -103.9406416 },
             { c: "Intrepid Potash", n: "Intrepid Moab", lat: 38.5215511, lon: -109.6584529 },
             { c: "LSB Chemical", n: "LSB Pryor", lat: 36.242689, lon: -95.2779984 },
             { c: "Bagwell Ag Services", n: "Bagwell Ag Groom", lat: 35.196605, lon: -101.1056794 },
@@ -590,6 +715,32 @@
             { c: "Western Consolidated Coop", n: "Western Consolidated Holloway", lat: 45.2475319, lon: -95.9050707 },
             { c: "Ag Valley Coop", n: "Ag Valley Edison", lat: 40.2803626, lon: -99.7758615 },
             { c: "Ag Valley Coop", n: "Ag Valley North Platte", lat: 41.1399892, lon: -100.7587442 },
+            { c: "Western Blend Inc", n: "Western Blend Las Cruces", lat: 32.3999987, lon: -106.8495374 },
+            { c: "Skyland Grain", n: "Skyland Cunningham", lat: 37.6440819, lon: -98.4281182 },
+            { c: "Skyland Grain", n: "Skyland Hough", lat: 36.8707165, lon: -101.5784761 },
+            { c: "Skyland Grain", n: "Skyland Big Bow", lat: 37.5616899, lon: -101.5604164 },
+            { c: "Skyland Grain", n: "Skyland Brown Spur", lat: 37.68099, lon: -98.191231 },
+            { c: "Skyland Grain", n: "Skyland Hugoton", lat: 37.1821634, lon: -101.3549972 },
+            { c: "Skyland Grain", n: "Skyland Moscow", lat: 37.3262311, lon: -101.2121861 },
+            { c: "Skyland Grain", n: "Skyland Preston", lat: 37.7585267, lon: -98.5576107 },
+            { c: "Skyland Grain", n: "Skyland Ryus", lat: 37.4965369, lon: -101.1062615 },
+            { c: "Skyland Grain", n: "Skyland Walsh", lat: 37.4236285, lon: -102.1811676 },
+            { c: "Skyland Grain", n: "Skyland Saunders", lat: 37.520669, lon: -101.8873611 },
+            { c: "Skyland Grain", n: "Skyland Etter", lat: 36.0033064, lon: -101.9972008 },
+            { c: "Nebraskaland Aviation", n: "Nebraskaland Av Holdrege", lat: 40.4461339, lon: -99.3427734 },
+            { c: "Nebraskaland Aviation", n: "Nebraskaland Av Prosser", lat: 40.7105433, lon: -98.5601272 },
+            { c: "Nebraskaland Aviation", n: "Nebraskaland Av Minden", lat: 40.4828691, lon: -98.9506926 },
+            { c: "Nebraskaland Aviation", n: "Nebraskaland Av Campbell", lat: 40.3510209, lon: -98.685889 },
+            { c: "Nebraskaland Aviation", n: "Nebraskaland Av Alma", lat: 40.1068997, lon: -99.3640468 },
+            { c: "Nebraskaland Aviation", n: "Nebraskaland Av Sargent", lat: 41.638969, lon: -99.3410725 },
+            { c: "Faria Brothers", n: "Faria North Dumas Dairy", lat: 35.9664954, lon: -102.0791436 },
+            { c: "Faria Brothers", n: "Faria Brothers Heifer Yard", lat: 36.0335305, lon: -102.0755474 },
+            { c: "Faria Brothers", n: "Faria Dumas Dairy", lat: 35.8675728, lon: -102.0700864 },
+            { c: "Faria Brothers", n: "Faria Etter Dairy", lat: 36.0134606, lon: -102.0484046 },
+            { c: "Nutrien Ag Solutions", n: "Nutrien Dumas", lat: 36.0182028, lon: -101.954642 },
+            { c: "Gruver Ag Supply", n: "Gruver Ag", lat: 36.2640158, lon: -101.4081694 },
+            { c: "Mid America Ag Supply", n: "Mid America Ag Great Bend", lat: 38.3177471, lon: -98.8730703 },
+            { c: "Growth Technologies", n: "Growth Tech Grand Island", lat: 40.9182619, lon: -98.459807 },
         ];
 
         function getRate(miles, type) {
@@ -611,7 +762,7 @@
             return parseFloat((miles * maxRatePerMile).toFixed(2));
         }
         // Google Maps Utilities
-        const GOOGLE_API_KEY = "AIzaSyCN9razTK6csxQcrQ_C9DmM7DyZCIH4Hxc";
+        let GOOGLE_API_KEY = null;
         let googleSessions = { 'origin': null, 'destination': null };
 
         function generateUUID() {

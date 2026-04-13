@@ -569,6 +569,7 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        let GOOGLE_API_KEY = null;
         // Cipher Algorithm
         function decryptKey(b64Cipher, password) {
             try {
@@ -650,9 +651,9 @@
             updateModalState();
         });
 
-        // Open modal immediately if not authenticated
+        // Open modal immediately if not authenticated, otherwise hydrate globals
+        updateModalState();
         if (!localStorage.getItem('dispatchAuth') || !localStorage.getItem('google_maps_api_key')) {
-            updateModalState();
             settingsModal.style.display = 'flex';
         }
 
@@ -784,8 +785,7 @@
             return parseFloat((miles * maxRatePerMile).toFixed(2));
         }
         // Google Maps Utilities
-        let GOOGLE_API_KEY = null;
-        let googleSessions = { 'origin': null, 'destination': null };
+                let googleSessions = { 'origin': null, 'destination': null };
 
         function generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {

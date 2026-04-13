@@ -415,7 +415,7 @@
                 height: 100%;
                 max-height: 900px;
                 display: grid;
-                grid-template-columns: minmax(300px, 400px) 1fr;
+                grid-template-columns: minmax(280px, 45%) 1fr;
                 grid-template-rows: auto auto auto auto auto 1fr auto;
                 gap: 1.5rem 2rem;
                 align-items: start;
@@ -474,8 +474,6 @@
     <div class="settings-modal" id="settingsModal"
         style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); z-index: 9999; justify-content: center; align-items: center; padding: 1rem;">
         <div class="container" style="text-align: center; gap: 1rem; position: relative;">
-            <button id="closeSettings"
-                style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; padding: 0.25rem; font-size: 1.5rem; width: auto; margin:0; box-shadow: none; color: var(--text-muted);">&times;</button>
             <h1 style="color: var(--text-main); font-size: 1.6rem; margin-bottom: 0;">App Settings</h1>
 
             <div id="loginSection" style="display: none;">
@@ -500,6 +498,7 @@
                 <button id="logoutBtn" style="background: var(--danger); width:80%; margin: 0 auto;">Logout & Clear
                     Keys</button>
             </div>
+            <button id="closeSettings" style="margin-top: 1rem; width: 80%; margin-left: auto; margin-right: auto; background: rgba(255,255,255,0.1);">Close</button>
         </div>
     </div>
 

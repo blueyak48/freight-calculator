@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Freight Rate Calculator v2.0.0</title>
+    <title>Freight Rate Calculator</title>
 
     <!-- PWA Setup -->
+    <link rel="icon" type="image/png" href="./icon-192.png">
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="./icon-192.png">
     <meta name="theme-color" content="#0ea5e9">
@@ -360,7 +361,6 @@
             margin-top: 1rem;
             border-radius: 0.5rem;
             overflow: hidden;
-            display: none;
             border: 1px solid rgba(255, 255, 255, 0.1);
             z-index: 1;
             /* Keep leaflet under autocomplete */
@@ -460,6 +460,7 @@
 </head>
 
 <body>
+    <img src="logo.png" alt="Company Logo" style="position: absolute; top: 1.5rem; left: 1.5rem; height: 32px; width: auto; z-index: 1000; opacity: 0.9;">
     <div id="settingsBtn"
         style="position: absolute; top: 1.5rem; right: 1.5rem; cursor: pointer; z-index: 1000; color: rgba(255,255,255,0.7); transition: color 0.2s;">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1057,17 +1058,31 @@
         let map = null;
         let routeLayer = null;
 
-        function renderMap(geometry) {
-            let mapContainer = document.getElementById('mapContainer');
-            mapContainer.style.display = 'block';
-
+        function initMap() {
             if (!map) {
-                map = L.map('mapContainer');
-                // Upgraded to CARTO Voyager tiles to permanently bypass the OSM 403 referer blocks!
+                map = L.map('mapContainer').setView([35.2220, -101.8313], 6);
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                     attribution: '&copy; OpenStreetMap, &copy; CARTO',
                     maxZoom: 19
                 }).addTo(map);
+                setTimeout(() => map.invalidateSize(), 150);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+        });
+
+        window.addEventListener('resize', () => {
+            if (map) setTimeout(() => map.invalidateSize(), 150);
+        });
+
+        function renderMap(geometry) {
+            let mapContainer = document.getElementById('mapContainer');
+            if (mapContainer) mapContainer.style.display = 'block';
+
+            if (!map) {
+                initMap();
             }
 
             if (routeLayer) {

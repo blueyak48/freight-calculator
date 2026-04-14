@@ -597,7 +597,7 @@
         const logoutBtn = document.getElementById('logoutBtn');
 
         function updateModalState() {
-            if (localStorage.getItem('dispatchAuth') === 'texline' && localStorage.getItem('google_maps_api_key')) {
+            if (localStorage.getItem('dispatchAuth') && localStorage.getItem('google_maps_api_key')) {
                 loginSection.style.display = 'none';
                 logoutSection.style.display = 'block';
                 GOOGLE_API_KEY = localStorage.getItem('google_maps_api_key');
@@ -617,25 +617,40 @@
         });
 
         function handlePinAuth() {
-            if (pinInput.value === 'texline') {
-                localStorage.setItem('dispatchAuth', 'texline');
-                fetch('keys.txt')
-                    .then(res => res.text())
-                    .then(b64 => {
-                        const decrypted = decryptKey(b64.trim(), pinInput.value);
-                        if (decrypted) {
-                            localStorage.setItem('google_maps_api_key', decrypted);
-                            GOOGLE_API_KEY = decrypted;
-                            pinInput.value = '';
-                            updateModalState();
-                            settingsModal.style.display = 'none';
-                        }
-                    }).catch(e => console.error("Could not fetch keys:", e));
-            } else {
-                pinError.style.display = 'block';
-                pinInput.value = '';
-                setTimeout(() => pinError.style.display = 'none', 2000);
-            }
+            const enteredPin = pinInput.value;
+            fetch('keys.txt')
+                .then(res => res.text())
+                .then(b64 => {
+                    const decrypted = decryptKey(b64.trim(), enteredPin);
+                    // Google Maps API keys always start with 'AIza'.
+                    // We use this exact structural checksum to verify if the decryption was successful with the right password.
+                    if (decrypted && decrypted.startsWith('AIza')) {
+                        localStorage.setItem('dispatchAuth', 'authenticated');
+                        localStorage.setItem('google_maps_api_key', decrypted);
+                        GOOGLE_API_KEY = decrypted;
+                        pinInput.value = '';
+                        updateModalState();
+                        settingsModal.style.display = 'none';
+                    } else {
+                        // The password was incorrect, so decryption resulted in gibberish that lacks the checksum
+                        pinError.style.display = 'block';
+                        pinInput.value = '';
+                        setTimeout(() => pinError.style.display = 'none', 2000);
+                    }
+                }).catch(e => {
+                    console.error("Could not fetch keys:", e);
+                    if (window.location.protocol === 'file:') {
+                        pinError.innerText = "Browser blocked file:// fetch. Use a local server.";
+                    } else {
+                        pinError.innerText = "Network Error Loading Keys";
+                    }
+                    pinError.style.display = 'block';
+                    pinInput.value = '';
+                    setTimeout(() => {
+                        pinError.style.display = 'none';
+                        pinError.innerText = "Incorrect PIN"; // reset to default
+                    }, 3500);
+                });
         }
 
         loginForm.addEventListener('submit', function (e) {

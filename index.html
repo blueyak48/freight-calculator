@@ -563,7 +563,7 @@
         </div>
 
         <div class="version-footer">
-            v2.5.4 | Rates Effective 2026 Mar 30
+            v2.5.5 | Rates Effective 2026 Mar 30
         </div>
     </div>
 
@@ -1006,7 +1006,7 @@
 
         async function getDistance(coord1, coord2) {
             // Deterministic cache key based on geometric coordinate pairing (accurate to ~30 feet)
-            let cacheKey = `R5_${coord1.lat.toFixed(4)}_${coord1.lon.toFixed(4)}_${coord2.lat.toFixed(4)}_${coord2.lon.toFixed(4)}`;
+            let cacheKey = `R6_${coord1.lat.toFixed(4)}_${coord1.lon.toFixed(4)}_${coord2.lat.toFixed(4)}_${coord2.lon.toFixed(4)}`;
             let cachedContent = localStorage.getItem(cacheKey);
 
             // If a dispatcher has naturally queried this exact coordinate pair before, natively extract it instantly for $0.00
@@ -1024,7 +1024,7 @@
                 destination: { location: { latLng: { latitude: coord2.lat, longitude: coord2.lon } } },
                 travelMode: "DRIVE",
                 routingPreference: "TRAFFIC_AWARE_OPTIMAL", // Aligns with Google Maps UI default behavior
-                trafficModel: "OPTIMISTIC",
+                trafficModel: "PESSIMISTIC",
                 units: "IMPERIAL"
             };
 

@@ -563,7 +563,7 @@
         </div>
 
         <div class="version-footer">
-            v2.5.5 | Rates Effective 2026 Mar 30
+            v3.0.0 | Rates Effective 2026 Mar 30
         </div>
     </div>
 
@@ -1004,9 +1004,9 @@
             return coordinates;
         }
 
-        async function getDistance(coord1, coord2) {
+        async function getDistance(coord1, coord2, type) {
             // Deterministic cache key based on geometric coordinate pairing (accurate to ~30 feet)
-            let cacheKey = `R6_${coord1.lat.toFixed(4)}_${coord1.lon.toFixed(4)}_${coord2.lat.toFixed(4)}_${coord2.lon.toFixed(4)}`;
+            let cacheKey = `R7_${coord1.lat.toFixed(4)}_${coord1.lon.toFixed(4)}_${coord2.lat.toFixed(4)}_${coord2.lon.toFixed(4)}_${type}`;
             let cachedContent = localStorage.getItem(cacheKey);
 
             // If a dispatcher has naturally queried this exact coordinate pair before, natively extract it instantly for $0.00
@@ -1014,6 +1014,7 @@
                 let data = JSON.parse(cachedContent);
                 return {
                     miles: data.miles,
+                    rate: data.rate,
                     geometry: { type: "LineString", coordinates: decodePolyline(data.polyline, false) }
                 };
             }
@@ -1024,7 +1025,7 @@
                 destination: { location: { latLng: { latitude: coord2.lat, longitude: coord2.lon } } },
                 travelMode: "DRIVE",
                 routingPreference: "TRAFFIC_AWARE_OPTIMAL", // Aligns with Google Maps UI default behavior
-                trafficModel: "PESSIMISTIC",
+                computeAlternativeRoutes: true,
                 units: "IMPERIAL"
             };
 
@@ -1045,16 +1046,30 @@
 
             if (!data.routes || data.routes.length === 0) throw new Error("Google Maps mapping satellite found no viable driving route.");
 
-            // Converts the raw meters directly into visually formatted decimals
-            let miles = parseFloat((data.routes[0].distanceMeters * 0.000621371).toFixed(1));
-            let polylineStr = data.routes[0].polyline.encodedPolyline;
+            let bestRoute = null;
+            let bestRate = Infinity;
+            let bestMiles = 0;
+
+            console.log(`Evaluated ${data.routes.length} routes:`);
+            for (let r of data.routes) {
+                let miles = parseFloat((r.distanceMeters * 0.000621371).toFixed(1));
+                let rate = getRate(miles, type);
+                console.log(` - Route: ${miles} miles => $${rate.toFixed(2)}`);
+                if (rate < bestRate) {
+                    bestRate = rate;
+                    bestMiles = miles;
+                    bestRoute = r;
+                }
+            }
+
+            let polylineStr = bestRoute.polyline.encodedPolyline;
 
             // Mathematically inject compressed line string exactly into local disk memory array.
             // Bypassing full array saving allows thousands of routes to exist silently on Chrome LocalStorage!
-            try { localStorage.setItem(cacheKey, JSON.stringify({ miles: miles, polyline: polylineStr })); } catch (e) { }
+            try { localStorage.setItem(cacheKey, JSON.stringify({ miles: bestMiles, rate: bestRate, polyline: polylineStr })); } catch (e) { }
 
             let coordinates = decodePolyline(polylineStr, false);
-            return { miles: miles, geometry: { type: "LineString", coordinates: coordinates } };
+            return { miles: bestMiles, rate: bestRate, geometry: { type: "LineString", coordinates: coordinates } };
         }
 
         let map = null;
@@ -1134,11 +1149,10 @@
                 ]);
 
                 // Execute massive Google Maps query directly
-                let routeObj = await getDistance(p1, p2);
-                let rateM = getRate(routeObj.miles, type);
+                let routeObj = await getDistance(p1, p2, type);
 
                 document.getElementById('resDistance').innerText = routeObj.miles.toLocaleString() + " miles";
-                document.getElementById('resRate').innerText = "$" + rateM.toFixed(2);
+                document.getElementById('resRate').innerText = "$" + routeObj.rate.toFixed(2);
                 resCard.style.display = 'flex';
                 renderMap(routeObj.geometry);
 

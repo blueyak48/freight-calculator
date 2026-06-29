@@ -562,7 +562,7 @@
         </div>
 
         <div class="version-footer">
-            v3.0.1 | Rates Effective 2026 Apr 27
+            v3.1.0 | Rates Effective 2026 Apr 27
         </div>
     </div>
 
@@ -834,13 +834,20 @@
                 input.removeAttribute('data-placeid');
                 clearBtn.style.display = this.value.length > 0 ? 'block' : 'none';
 
+                let rawVal = this.value.trim();
+                const isCoordTyping = /^\s*-?\d+(?:\.\d+)?\s*(?:,\s*-?\d*(?:\.\d+)?|\s+-?\d*(?:\.\d+)?)$/.test(rawVal);
+                if (isCoordTyping) {
+                    list.style.display = 'none';
+                    return;
+                }
+
                 // Mint a fresh Session Token UUID
                 if (!googleSessions[inputId]) {
                     googleSessions[inputId] = generateUUID();
                 }
 
                 clearTimeout(debounceTimer);
-                let val = this.value.trim().toLowerCase();
+                let val = rawVal.toLowerCase();
                 if (val.length < 2) {
                     list.style.display = 'none';
                     return;
@@ -954,6 +961,23 @@
 
         async function resolveLocation(inputId) {
             let input = document.getElementById(inputId);
+            let val = input.value.trim();
+
+            // Try to match decimal coordinates (lat, lon)
+            let coordMatch = val.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+            if (!coordMatch) {
+                // Support space-separated values
+                coordMatch = val.match(/^\s*(-?\d+(?:\.\d+)?)\s+\s*(-?\d+(?:\.\d+)?)\s*$/);
+            }
+            if (coordMatch) {
+                let latVal = parseFloat(coordMatch[1]);
+                let lonVal = parseFloat(coordMatch[2]);
+                if (latVal >= -90 && latVal <= 90 && lonVal >= -180 && lonVal <= 180) {
+                    googleSessions[inputId] = null; // Drop unused session token
+                    return { lat: latVal, lon: lonVal };
+                }
+            }
+
             let lat = input.getAttribute('data-lat');
             let lon = input.getAttribute('data-lon');
             let placeId = input.getAttribute('data-placeid');

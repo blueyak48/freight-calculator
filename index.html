@@ -961,13 +961,13 @@
 
         async function resolveLocation(inputId) {
             let input = document.getElementById(inputId);
-            let val = input.value.trim();
+            let rawVal = input.value.trim();
 
             // Try to match decimal coordinates (lat, lon)
-            let coordMatch = val.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+            let coordMatch = rawVal.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
             if (!coordMatch) {
                 // Support space-separated values
-                coordMatch = val.match(/^\s*(-?\d+(?:\.\d+)?)\s+\s*(-?\d+(?:\.\d+)?)\s*$/);
+                coordMatch = rawVal.match(/^\s*(-?\d+(?:\.\d+)?)\s+\s*(-?\d+(?:\.\d+)?)\s*$/);
             }
             if (coordMatch) {
                 let latVal = parseFloat(coordMatch[1]);

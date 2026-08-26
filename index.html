@@ -562,13 +562,14 @@
         </div>
 
         <div class="version-footer">
-            v3.1.0 | Rates Effective 2026 Apr 27
+            v3.1.2 | Rates Effective 2026 Apr 27
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         let GOOGLE_API_KEY = null;
+        let CARTO_API_KEY = null;
         // Cipher Algorithm
         function decryptKey(b64Cipher, password) {
             try {
@@ -601,6 +602,7 @@
                 loginSection.style.display = 'none';
                 logoutSection.style.display = 'block';
                 GOOGLE_API_KEY = localStorage.getItem('google_maps_api_key');
+                CARTO_API_KEY = localStorage.getItem('carto_api_key');
             } else {
                 loginSection.style.display = 'block';
                 logoutSection.style.display = 'none';
@@ -622,17 +624,34 @@
                 .then(res => res.text())
                 .then(b64 => {
                     const decrypted = decryptKey(b64.trim(), enteredPin);
-                    // Google Maps API keys always start with 'AIza'.
-                    // We use this exact structural checksum to verify if the decryption was successful with the right password.
-                    if (decrypted && decrypted.startsWith('AIza')) {
+                    let googleKey = null;
+                    let cartoKey = null;
+
+                    if (decrypted) {
+                        try {
+                            const parsed = JSON.parse(decrypted);
+                            if (parsed && parsed.google && parsed.google.startsWith('AIza')) {
+                                googleKey = parsed.google;
+                                cartoKey = parsed.carto;
+                            }
+                        } catch (e) {
+                            if (decrypted.startsWith('AIza')) {
+                                googleKey = decrypted;
+                            }
+                        }
+                    }
+
+                    if (googleKey) {
                         localStorage.setItem('dispatchAuth', 'authenticated');
-                        localStorage.setItem('google_maps_api_key', decrypted);
-                        GOOGLE_API_KEY = decrypted;
+                        localStorage.setItem('google_maps_api_key', googleKey);
+                        if (cartoKey) localStorage.setItem('carto_api_key', cartoKey);
+                        GOOGLE_API_KEY = googleKey;
+                        CARTO_API_KEY = cartoKey;
                         pinInput.value = '';
                         updateModalState();
                         settingsModal.style.display = 'none';
+                        if (typeof updateMapTileLayer === 'function') updateMapTileLayer();
                     } else {
-                        // The password was incorrect, so decryption resulted in gibberish that lacks the checksum
                         pinError.style.display = 'block';
                         pinInput.value = '';
                         setTimeout(() => pinError.style.display = 'none', 2000);
@@ -660,8 +679,10 @@
 
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('google_maps_api_key');
+            localStorage.removeItem('carto_api_key');
             localStorage.removeItem('dispatchAuth');
             GOOGLE_API_KEY = null;
+            CARTO_API_KEY = null;
             updateModalState();
         });
 
@@ -1099,15 +1120,32 @@
 
         let map = null;
         let routeLayer = null;
+        let tileLayer = null;
+
+        function getCartoTileUrl() {
+            const key = CARTO_API_KEY || localStorage.getItem('carto_api_key');
+            const keyParam = key ? `?api_key=${key}` : '';
+            return `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${keyParam}`;
+        }
 
         function initMap() {
             if (!map) {
                 map = L.map('mapContainer').setView([35.2220, -101.8313], 6);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                tileLayer = L.tileLayer(getCartoTileUrl(), {
                     attribution: '&copy; OpenStreetMap, &copy; CARTO',
                     maxZoom: 19
                 }).addTo(map);
                 setTimeout(() => map.invalidateSize(), 150);
+            }
+        }
+
+        function updateMapTileLayer() {
+            if (map && tileLayer) {
+                map.removeLayer(tileLayer);
+                tileLayer = L.tileLayer(getCartoTileUrl(), {
+                    attribution: '&copy; OpenStreetMap, &copy; CARTO',
+                    maxZoom: 19
+                }).addTo(map);
             }
         }
 

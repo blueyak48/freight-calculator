@@ -1,4 +1,4 @@
-const CACHE_NAME = `freight-rate-v3.0.0`;
+const CACHE_NAME = `freight-rate-v3.1.2`;
 const urlsToCache = [
   `./`,
   `./index.html`,

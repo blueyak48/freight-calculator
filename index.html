@@ -562,7 +562,7 @@
         </div>
 
         <div class="version-footer">
-            v3.1.2 | Rates Effective 2026 Apr 27
+            v3.2.0 | Rates Effective 2026 Apr 27
         </div>
     </div>
 
@@ -1124,7 +1124,7 @@
 
         function getCartoTileUrl() {
             const key = CARTO_API_KEY || localStorage.getItem('carto_api_key');
-            const keyParam = key ? `?api_key=${key}` : '';
+            const keyParam = key ? `?key=${key}` : '';
             return `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${keyParam}`;
         }
 
@@ -1146,6 +1146,8 @@
                     attribution: '&copy; OpenStreetMap, &copy; CARTO',
                     maxZoom: 19
                 }).addTo(map);
+            } else if (map && !tileLayer) {
+                initMap();
             }
         }
 

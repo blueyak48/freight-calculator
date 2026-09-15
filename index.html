@@ -562,7 +562,7 @@
         </div>
 
         <div class="version-footer">
-            v3.3.0 | Rates Effective 2026 Sep 15
+            v3.3.1 | Rates Effective 2026 Sep 15
         </div>
     </div>
 
@@ -822,8 +822,27 @@
             let maxRatePerMile = maxStep[1] / maxStep[0];
             return parseFloat((miles * maxRatePerMile).toFixed(2));
         }
+
+        // Invalidate or refresh cached rates in localStorage so previously searched routes reflect current rates
+        try {
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key && (key.startsWith('R7_') || key.startsWith('R_'))) {
+                    let raw = localStorage.getItem(key);
+                    if (raw) {
+                        let parsed = JSON.parse(raw);
+                        if (parsed && parsed.miles) {
+                            let rType = key.endsWith('_nh3') ? 'nh3' : 'liquid';
+                            parsed.rate = getRate(parsed.miles, rType);
+                            localStorage.setItem(key, JSON.stringify(parsed));
+                        }
+                    }
+                }
+            }
+        } catch (e) { }
+
         // Google Maps Utilities
-                let googleSessions = { 'origin': null, 'destination': null };
+        let googleSessions = { 'origin': null, 'destination': null };
 
         function generateUUID() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -1058,9 +1077,14 @@
             // If a dispatcher has naturally queried this exact coordinate pair before, natively extract it instantly for $0.00
             if (cachedContent) {
                 let data = JSON.parse(cachedContent);
+                let currentRate = getRate(data.miles, type);
+                if (data.rate !== currentRate) {
+                    data.rate = currentRate;
+                    try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch (e) { }
+                }
                 return {
                     miles: data.miles,
-                    rate: data.rate,
+                    rate: currentRate,
                     geometry: { type: "LineString", coordinates: decodePolyline(data.polyline, false) }
                 };
             }
@@ -1215,9 +1239,10 @@
 
                 // Execute massive Google Maps query directly
                 let routeObj = await getDistance(p1, p2, type);
+                let currentRate = getRate(routeObj.miles, type);
 
                 document.getElementById('resDistance').innerText = routeObj.miles.toLocaleString() + " miles";
-                document.getElementById('resRate').innerText = "$" + routeObj.rate.toFixed(2);
+                document.getElementById('resRate').innerText = "$" + currentRate.toFixed(2);
                 resCard.style.display = 'flex';
                 renderMap(routeObj.geometry);
 
